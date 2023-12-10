@@ -128,8 +128,10 @@ public class PlayerSource {
     public void generateShuffleOrder(Integer seed) {
         indices.clear();
         Random random = new Random(seed);
-        for (int i = 0; i < audioCollection.getNumberOfTracks(); i++) {
-            indices.add(i);
+        if (audioCollection != null) {
+            for (int i = 0; i < audioCollection.getNumberOfTracks(); i++) {
+                indices.add(i);
+            }
         }
         Collections.shuffle(indices, random);
     }

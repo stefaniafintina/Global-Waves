@@ -371,6 +371,7 @@ public class CommandRunner {
         return objectNode;
     }
     public static ObjectNode printCurrentPage(CommandInput commandInput) {
+        System.out.println(commandInput.getTimestamp());
         User user = Admin.getUser(commandInput.getUsername());
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("user", commandInput.getUsername());
@@ -471,6 +472,20 @@ public class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
         objectNode.put("message", Admin.changePage(commandInput.getUsername(), commandInput.getNextPage()));
+        return objectNode;
+    }
+    public static ObjectNode getTop5Albums(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("result", objectMapper.valueToTree(Admin.getTop5Albums()));
+        return objectNode;
+    }
+    public static ObjectNode getTop5Artists(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("result", objectMapper.valueToTree(Admin.getTop5Artists()));
         return objectNode;
     }
 }

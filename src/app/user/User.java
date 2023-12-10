@@ -194,8 +194,8 @@ public class User extends LibraryEntry{
         if (player.getCurrentAudioFile() == null)
             return "Please load a source before using the shuffle function.";
 
-//        if (!player.getType().equals("playlist") || !player.getType().equals("album"))
-//            return "The loaded source is not an album or a playlist.";
+        if (!player.getType().equals("playlist") && !player.getType().equals("album"))
+            return "The loaded source is not a playlist or an album.";
 
         player.shuffle(seed);
 
@@ -233,8 +233,7 @@ public class User extends LibraryEntry{
             return this.username + " is offline.";
         if (player.getCurrentAudioFile() == null)
             return "Please load a source before liking or unliking.";
-
-        if (!player.getType().equals("song") && !player.getType().equals("playlist"))
+        if (!player.getType().equals("song") && !player.getType().equals("playlist") && !player.getType().equals("album"))
             return "Loaded source is not a song.";
 
         Song song = (Song) player.getCurrentAudioFile();
@@ -427,21 +426,7 @@ public class User extends LibraryEntry{
             return podcast;
         }
     }
-    public ArrayList<String> mostLikedSongs() {
-        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(mostLikedSongs.entrySet());
 
-        entryList.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-        ArrayList<String> songsList = new ArrayList<>();
-        int cnt = 0;
-        for (Map.Entry<String, Integer> entry : entryList) {
-            if (cnt < 5)
-                songsList.add(entry.getKey());
-            else
-                break;
-            cnt ++;
-        }
-        return songsList;
-    }
     public Event addEvent(Event event) {
         for (Event event1: events) {
             if (event1.getName().equals(event.getName())) {
@@ -531,6 +516,15 @@ public class User extends LibraryEntry{
         }
         return likedSongsList;
     }
+    public ArrayList<String> getLikePageList() {
+        ArrayList<String> likedSongsList = new ArrayList<>();
+        for (Song song: this.getLikedSongs()) {
+            String message;
+            message = song.getName();
+            likedSongsList.add(message);
+        }
+        return likedSongsList;
+    }
     public ArrayList<String> getFollowedPlaylistsList() {
         ArrayList<String> followedPlaylistsList = new ArrayList<>();
         for (Playlist playlist: this.getFollowedPlaylists()) {
@@ -540,6 +534,7 @@ public class User extends LibraryEntry{
         }
         return followedPlaylistsList;
     }
+
     public void simulateTime(int time) {
         player.simulatePlayer(time);
     }
