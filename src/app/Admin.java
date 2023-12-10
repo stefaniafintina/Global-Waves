@@ -106,8 +106,20 @@ public class Admin {
         }
         return null;
     }
-    public static void updateTimestamp(int newTimestamp) {
-        if (connectionStatus) {
+    public static void updateTimestamp(int newTimestamp, String username) {
+        User user1 = getUser(username);
+        if (user1 != null) {
+            if (user1.isConnectionStatus()) {
+                int elapsed = newTimestamp - timestamp;
+                timestamp = newTimestamp;
+                if (elapsed == 0) {
+                    return;
+                }
+                for (User user : users) {
+                    user.simulateTime(elapsed);
+                }
+            }
+        } else {
             int elapsed = newTimestamp - timestamp;
             timestamp = newTimestamp;
             if (elapsed == 0) {
@@ -147,7 +159,58 @@ public class Admin {
         }
         return topPlaylists;
     }
+    public static  ArrayList<String> getTop5Albums() {
+        HashMap<String, Integer> mostLikedAlbums = new HashMap<>();
+        for (User user: users) {
+            for (Album album : user.getAlbums()) {
+                int likeCounter = 0;
+                for (Song song : album.getSongs()) {
+                    likeCounter += song.getLikes();
+                }
+                mostLikedAlbums.put(album.getName(), likeCounter);
+            }
+        }
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(mostLikedAlbums.entrySet());
 
+        entryList.sort(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()));
+        ArrayList<String> albumsList = new ArrayList<>();
+        int cnt = 0;
+        for (Map.Entry<String, Integer> entry : entryList) {
+            if (cnt < 5)
+                albumsList.add(entry.getKey());
+            else
+                break;
+            cnt ++;
+        }
+        return albumsList;
+    }
+    public static  ArrayList<String> getTop5Artists() {
+        HashMap<String, Integer> mostLikedArtists = new HashMap<>();
+        for (User user: users) {
+            int likeCounter = 0;
+            for (Album album : user.getAlbums()) {
+                for (Song song : album.getSongs()) {
+                    likeCounter += song.getLikes();
+                }
+            }
+            mostLikedArtists.put(user.getName(), likeCounter);
+        }
+        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(mostLikedArtists.entrySet());
+
+        entryList.sort(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                .thenComparing(Map.Entry.comparingByKey()));
+        ArrayList<String> albumsList = new ArrayList<>();
+        int cnt = 0;
+        for (Map.Entry<String, Integer> entry : entryList) {
+            if (cnt < 5)
+                albumsList.add(entry.getKey());
+            else
+                break;
+            cnt ++;
+        }
+        return albumsList;
+    }
     public static User checkIfUserExists(String username) {
         for (User user: users) {
             if (user.getUsername().equals(username))
@@ -413,8 +476,44 @@ public class Admin {
                                 }
                             }
                             for (Album album : getAlbums()) {
+                                for (Song song: album.getSongs()) {
+                                    if (user1.getPlayer().getSource().getAudioFile().getName().equals(song.getName())) {
+                                        if (album.getOwner().equals(username))
+                                            return username + " can't be deleted.";
+                                    }
+                                }
+                            }
+                            for (Album album : getAlbums()) {
                                 if (user1.getPlayer().getSource().getAudioFile().getName().equals(album.getName())) {
                                     if (album.getOwner().equals(username))
+                                        return username + " can't be deleted.";
+                                }
+                            }
+                            for (Playlist playlist : getPlaylists()) {
+                                for (Song song: playlist.getSongs()) {
+                                    if (user1.getPlayer().getSource().getAudioFile().getName().equals(song.getName())) {
+                                        if (playlist.getOwner().equals(username))
+                                            return username + " can't be deleted.";
+                                    }
+                                }
+                            }
+                            for (Playlist playlist : getPlaylists()) {
+                                if (user1.getPlayer().getSource().getAudioFile().getName().equals(playlist.getName())) {
+                                    if (playlist.getOwner().equals(username))
+                                        return username + " can't be deleted.";
+                                }
+                            }
+                            for (Podcast podcast : getPodcasts()) {
+                                for (Episode episode: podcast.getEpisodes()) {
+                                    if (user1.getPlayer().getSource().getAudioFile().getName().equals(episode.getName())) {
+                                        if (podcast.getOwner().equals(username))
+                                            return username + " can't be deleted.";
+                                    }
+                                }
+                            }
+                            for (Podcast podcast : getPodcasts()) {
+                                if (user1.getPlayer().getSource().getAudioFile().getName().equals(podcast.getName())) {
+                                    if (podcast.getOwner().equals(username))
                                         return username + " can't be deleted.";
                                 }
                             }
@@ -519,8 +618,12 @@ public class Admin {
                     if (user1.getPlayer().getSource().getAudioFile().getName().equals(name))
                         return username + " can't delete this podcast.";
                     for (Podcast podcast: getPodcasts()) {
-                        if (podcast.getName().equals(user1.getPlayer().getSource().getAudioFile().getName()))
-                            return username + " can't delete this podcast.";
+                        if (podcast.getName().equals(name)) {
+                            for (Episode episode: podcast.getEpisodes()) {
+                                if (user1.getPlayer().getSource().getAudioFile().getName().equals(episode.getName()))
+                                    return username + " can't delete this podcast.";
+                            }
+                        }
                     }
                 }
             }

@@ -1,6 +1,9 @@
 package fileio.input;
 
 import app.audio.Files.Episode;
+import app.user.User;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;

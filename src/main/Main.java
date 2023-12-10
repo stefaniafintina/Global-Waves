@@ -61,7 +61,7 @@ public final class Main {
                 action(file.getName(), filepath);
             }
 
-            if (i == 10)
+            if (i == 16)
                 break;
             i++;
         }
@@ -89,7 +89,7 @@ public final class Main {
         Admin.setPodcasts(library.getPodcasts());
 
         for (CommandInput command : commands) {
-            Admin.updateTimestamp(command.getTimestamp());
+            Admin.updateTimestamp(command.getTimestamp(), command.getUsername());
 
             String commandName = command.getCommand();
 
@@ -133,6 +133,8 @@ public final class Main {
                 case "addAnnouncement" -> outputs.add(CommandRunner.addAnnouncement(command));
                 case "removeAnnouncement" -> outputs.add(CommandRunner.removeAnnouncement(command));
                 case "changePage" -> outputs.add(CommandRunner.changePage(command));
+                case "getTop5Albums" -> outputs.add(CommandRunner.getTop5Albums(command));
+                case "getTop5Artists" -> outputs.add(CommandRunner.getTop5Artists(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }
