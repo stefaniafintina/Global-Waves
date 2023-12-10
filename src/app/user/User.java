@@ -194,8 +194,8 @@ public class User extends LibraryEntry{
         if (player.getCurrentAudioFile() == null)
             return "Please load a source before using the shuffle function.";
 
-        if (!player.getType().equals("playlist"))
-            return "The loaded source is not a playlist.";
+//        if (!player.getType().equals("playlist") || !player.getType().equals("album"))
+//            return "The loaded source is not an album or a playlist.";
 
         player.shuffle(seed);
 

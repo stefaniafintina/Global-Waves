@@ -97,14 +97,7 @@ public class Admin {
         }
         return albums;
     }
-//    public static List<Podcast> getPodcast() {
-//        List<Podcast> podcasts = new ArrayList<>();
-//        for (User user : users) {
-//            if (user.getPodcasts() != null)
-//                podcasts.addAll(user.getPodcasts());
-//        }
-//        return podcasts;
-//    }
+
     public static User getUser(String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) {
@@ -269,10 +262,19 @@ public class Admin {
         return "The username " + username + " doesn't exist.";
     }
     public static String removeAlbum(String username, String name) {
+        boolean existentAlbum = false;
         if (checkIfUserExists(username) == null)
-            return username + " doesn't exist.";
+            return "The username " + username + " doesn't exist.";
         if (!checkIfArtist(username))
             return username + " is not an artist.";
+        for (Album album: getUser(username).getAlbums()) {
+            if (album.getName().equals(name)) {
+                existentAlbum  = true;
+               break;
+            }
+        }
+        if (!existentAlbum)
+            return username + " doesn't have an album with the given name.";
         for (User user1 : users) {
             if (!user1.getName().equals(username)) {
                 if (user1.getPage().getOwner().getName().equals(getUser(username).getPage().getOwner().getName())) {
@@ -299,7 +301,6 @@ public class Admin {
                     return username + " has successfully deleted the album.";
                 }
             }
-            return username + " has no album with the given name.";
         }
         return null;
     }
@@ -359,6 +360,22 @@ public class Admin {
         }
         return "The username " + username + " doesn't exist.";
     }
+    public static String removeEvent(String username, String name) {
+        if (checkIfUserExists(username) == null)
+            return username + " doesn't exist.";
+        if (!checkIfArtist(username))
+            return username + " is not an artist.";
+        if (getUser(username) != null) {
+            for (Event event: getUser(username).getEvents()) {
+                if (event.getName().equals(name)) {
+                    getUser(username).getEvents().remove(event);
+                    return username + " deleted the event successfully.";
+                }
+            }
+            return username + " doesn't have an event with the given name.";
+        }
+        return null;
+    }
     public static String addMerch(String username, String name, double price, String description) {
         Merch myMerch = new Merch(price, description, name);
         for (User user: users) {
@@ -382,8 +399,6 @@ public class Admin {
     public static String deleteUser(String username) {
         for (User user:  users) {
             if (user.getName().equals(username)) {
-//                if (!user.isArtist() && !user.isHost())
-//                    return username + " was successfully deleted.";
                 for (User user1 : users) {
                     if (!user1.getName().equals(username)) {
                         if (user1.getPage().getOwner().getName().equals(user.getPage().getOwner().getName())) {
@@ -414,7 +429,11 @@ public class Admin {
                         }
                     }
                 }
-                System.out.println("pe asta l sterg " + username);
+
+                for (Playlist playlist : getUser(username).getFollowedPlaylists()) {
+                    playlist.setFollowers(playlist.getFollowers() - 1);
+                }
+
                 getAlbums().removeIf(album -> album.getOwner().equals(username));
                 for (User user1 : users) {
                     user1.getLikedSongs().removeIf(song -> song.getArtist().equals(username));
@@ -486,6 +505,34 @@ public class Admin {
                 user.addPodcast(podcast);
                 return username + " has added new podcast successfully.";
             }
+        }
+        return null;
+    }
+    public static String removePodcast(String username, String name) {
+        if (checkIfUserExists(username) == null)
+            return username + " doesn't exist.";
+        if (!checkIfHost(username))
+            return username + " is not an artist.";
+        for (User user1 : users) {
+            if (!user1.getName().equals(username)) {
+                if (user1.getPlayer().getSource() != null) {
+                    if (user1.getPlayer().getSource().getAudioFile().getName().equals(name))
+                        return username + " can't delete this podcast.";
+                    for (Podcast podcast: getPodcasts()) {
+                        if (podcast.getName().equals(user1.getPlayer().getSource().getAudioFile().getName()))
+                            return username + " can't delete this podcast.";
+                    }
+                }
+            }
+        }
+        if (getUser(username) != null) {
+            for (Podcast podcast: getUser(username).getPodcasts()) {
+                if (podcast.getName().equals(name)) {
+                    getUser(username).getPodcasts().remove(podcast);
+                    return username + " deleted the podcast successfully.";
+                }
+            }
+            return username + " doesn't have a podcast with the given name.";
         }
         return null;
     }

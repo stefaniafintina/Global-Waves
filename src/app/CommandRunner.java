@@ -393,6 +393,14 @@ public class CommandRunner {
         objectNode.put("message", Admin.addEvent(commandInput.getUsername(), commandInput.getName(), commandInput.getDate(), commandInput.getDescription()));
         return objectNode;
     }
+    public static ObjectNode removeEvent(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.removeEvent(commandInput.getUsername(), commandInput.getName()));
+        return objectNode;
+    }
     public static ObjectNode addMerch(CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
@@ -423,6 +431,14 @@ public class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());;
         objectNode.put("message", Admin.addPodcast(commandInput.getUsername(), commandInput.getEpisodes(), commandInput.getName()));
+        return objectNode;
+    }
+    public static ObjectNode removePodcast(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());;
+        objectNode.put("message", Admin.removePodcast(commandInput.getUsername(), commandInput.getName()));
         return objectNode;
     }
     public static ObjectNode showPodcasts(CommandInput commandInput) {
