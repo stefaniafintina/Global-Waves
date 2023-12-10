@@ -382,8 +382,8 @@ public class Admin {
     public static String deleteUser(String username) {
         for (User user:  users) {
             if (user.getName().equals(username)) {
-                if (!user.isArtist() && !user.isHost())
-                    return username + " was successfully deleted.";
+//                if (!user.isArtist() && !user.isHost())
+//                    return username + " was successfully deleted.";
                 for (User user1 : users) {
                     if (!user1.getName().equals(username)) {
                         if (user1.getPage().getOwner().getName().equals(user.getPage().getOwner().getName())) {
@@ -414,27 +414,27 @@ public class Admin {
                         }
                     }
                 }
-
+                System.out.println("pe asta l sterg " + username);
                 getAlbums().removeIf(album -> album.getOwner().equals(username));
                 for (User user1 : users) {
                     user1.getLikedSongs().removeIf(song -> song.getArtist().equals(username));
+
                     for (Song song : songs) {
                         if (song.getArtist().equals(username)) {
                             user1.getMostLikedSongs().remove(song.getName());
                         }
                     }
-                    for (Playlist playlist: user1.getFollowedPlaylists()) {
-                        if (playlist.getOwner().equals(username)) {
-                            user1.getFollowedPlaylists().remove(playlist);
-                        }
-                        for (Song song: playlist.getSongs()) {
+
+                    user1.getFollowedPlaylists().removeIf(playlist -> playlist.getOwner().equals(username));
+
+                    for (Playlist playlist : user1.getFollowedPlaylists()) {
+                        for (Song song : playlist.getSongs()) {
                             if (song.getArtist().equals(username))
                                 playlist.removeSong(song);
                         }
                         if (playlist.getSongs().isEmpty())
                             user1.getFollowedPlaylists().remove(playlist);
                     }
-
                 }
                 songs.removeIf(song -> song.getArtist().equals(username));
                 users.remove(user);
