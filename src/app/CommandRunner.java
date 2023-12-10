@@ -380,9 +380,6 @@ public class CommandRunner {
             objectNode.put("message", commandInput.getUsername() + " is offline.");
         else {
             if (user != null) {
-                System.out.println(commandInput.getTimestamp());
-                for (Playlist playlist: user.getFollowedPlaylists())
-                    System.out.println(playlist.getName());
                 objectNode.put("message", user.getPage().printCurrentPage());
             }
         }
