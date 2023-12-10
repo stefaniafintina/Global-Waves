@@ -5,6 +5,7 @@ import app.audio.Files.AudioFile;
 import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.user.User;
+import fileio.input.EpisodeInput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,9 @@ public final class Podcast extends AudioCollection {
     public List<Episode> getEpisodes() {
         return episodes;
     }
+    public void addEpisode(Episode episode) {
+        episodes.add(episode);
+    }
 
     @Override
     public int getNumberOfTracks() {
@@ -30,10 +34,5 @@ public final class Podcast extends AudioCollection {
     public AudioFile getTrackByIndex(int index) {
         return episodes.get(index);
     }
-    public boolean hasSomethingBelongingTo(User user) {
-//        for (Song song : Admin.getSongs())
-//            if (song.getArtist().equals(user.getName()))
-//                return true;
-        return false;
-    }
+
 }

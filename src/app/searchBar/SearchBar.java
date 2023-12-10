@@ -38,7 +38,7 @@ public class SearchBar {
     }
     public List<LibraryEntry> search(Filters filters, String type) {
         List<LibraryEntry> entries;
-
+        searchType = 0;
         switch (type) {
             case "song":
                 entries = new ArrayList<>(Admin.getSongs());
@@ -126,12 +126,13 @@ public class SearchBar {
                 }
                 break;
 
-//            case "host":
-//                entries = new ArrayList<>(Admin.getAlbums());
-//
-//                if (filters.getName() != null) {
-//                    entries = filterByName(entries, filters.getName());
-//                }
+            case "host":
+                searchType = 1;
+                entries = new ArrayList<>(Admin.getHosts());
+                if (filters.getName() != null) {
+                    entries = filterByName(entries, filters.getName());
+                }
+                break;
             default:
                 entries = new ArrayList<>();
         }

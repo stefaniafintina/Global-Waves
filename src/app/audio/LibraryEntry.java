@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public abstract class LibraryEntry {
     private final String name;
 
+
     public LibraryEntry(String name) {
         this.name = name;
     }

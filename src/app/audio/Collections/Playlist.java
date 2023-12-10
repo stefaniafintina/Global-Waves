@@ -86,11 +86,5 @@ public final class Playlist extends AudioCollection {
             return count == Integer.parseInt(query);
         }
     }
-    @Override
-    public boolean hasSomethingBelongingTo(User user) {
-        for (Song song : Admin.getSongs())
-            if (song.getArtist().equals(user.getName()))
-                return true;
-        return false;
-    }
+
 }

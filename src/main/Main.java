@@ -61,7 +61,7 @@ public final class Main {
                 action(file.getName(), filepath);
             }
 
-            if (i == 4)
+            if (i == 5)
                 break;
             i++;
         }
@@ -124,6 +124,10 @@ public final class Main {
                 case "addMerch" -> outputs.add(CommandRunner.addMerch(command));
                 case "deleteUser" -> outputs.add(CommandRunner.deleteUser(command));
                 case "getAllUsers" -> outputs.add(CommandRunner.getAllUsers(command));
+                case "addPodcast" -> outputs.add(CommandRunner.addPodcast(command));
+                case "showPodcasts" -> outputs.add(CommandRunner.showPodcasts(command));
+                case "addAnnouncement" -> outputs.add(CommandRunner.addAnnouncement(command));
+                case "removeAnnouncement" -> outputs.add(CommandRunner.removeAnnouncement(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }

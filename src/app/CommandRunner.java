@@ -1,6 +1,7 @@
 package app;
 
 import app.audio.Collections.PlaylistOutput;
+import app.audio.Files.Episode;
 import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.searchBar.SearchBar;
@@ -404,6 +405,38 @@ public class CommandRunner {
         objectNode.put("timestamp", commandInput.getTimestamp());
         ArrayList<String> resultList = Admin.getAllUsers();
         objectNode.put("result", objectMapper.valueToTree(resultList));
+        return objectNode;
+    }
+    public static ObjectNode addPodcast(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());;
+        objectNode.put("message", Admin.addPodcast(commandInput.getUsername(), commandInput.getEpisodes(), commandInput.getName()));
+        return objectNode;
+    }
+    public static ObjectNode showPodcasts(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("result", Admin.showPodcasts(commandInput.getUsername()));
+        return objectNode;
+    }
+    public static ObjectNode addAnnouncement(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());;
+        objectNode.put("message", Admin.addAnnouncement(commandInput.getUsername(), commandInput.getName(), commandInput.getDescription()));
+        return objectNode;
+    }
+    public static ObjectNode removeAnnouncement(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());;
+        objectNode.put("message", Admin.removeAnnouncement(commandInput.getUsername(), commandInput.getName()));
         return objectNode;
     }
 }

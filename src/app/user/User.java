@@ -4,22 +4,24 @@ import app.Admin;
 import app.Pages.ArtistsPage;
 import app.Pages.Page;
 import app.artistsPage.Merch;
-import app.audio.Collections.Album;
-import app.audio.Collections.AudioCollection;
-import app.audio.Collections.Playlist;
-import app.audio.Collections.PlaylistOutput;
+import app.audio.Collections.*;
 import app.audio.Files.AudioFile;
+import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.audio.LibraryEntry;
 import app.artistsPage.Event;
+import app.hostsPage.Announcement;
 import app.player.Player;
 import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.searchBar.SearchBar;
 import app.utils.Enums;
+import fileio.input.EpisodeInput;
 import fileio.input.SongInput;
+import javassist.expr.NewArray;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Delegate;
 import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
@@ -42,9 +44,12 @@ public class User extends LibraryEntry{
     @Getter
     private ArrayList<Merch> merches;
     @Getter
+    private ArrayList<Announcement> announcements;
+    @Getter
     private ArrayList<Song> likedSongs;
     @Getter
     private ArrayList<Playlist> followedPlaylists;
+    @Getter
     private HashMap<String, Integer> mostLikedSongs;
     @Getter
     @Setter
@@ -73,6 +78,9 @@ public class User extends LibraryEntry{
     @Setter
     private boolean isUsed;
     private String selectedType;
+    @Getter
+    @Setter
+    private ArrayList<Podcast> podcasts;
     public User(String username, int age, String city) {
         super(username);
         this.username = username;
@@ -95,10 +103,8 @@ public class User extends LibraryEntry{
         artistPage = new ArtistsPage(this);
         isUsed = false;
         selectedType = null;
-    }
-
-    public HashMap<String, Integer> getMostLikedSongs() {
-        return mostLikedSongs;
+        podcasts = new ArrayList<>();
+        announcements = new ArrayList<>();
     }
 
     public ArrayList<String> search(Filters filters, String type) {
@@ -132,7 +138,6 @@ public class User extends LibraryEntry{
         if (selected == null)
             return "The selected ID is too high.";
         if (searchBar.getSearchType() == 1) {
-            artistSelected = 1;
             page = ((User)selected).getPage();
             return "Successfully selected %s's page.".formatted(selected.getName());
         }
@@ -414,6 +419,14 @@ public class User extends LibraryEntry{
             return album;
         }
     }
+    public Podcast addPodcast(Podcast podcast) {
+        if (podcasts.contains(podcast.getName())) {
+            return null;
+        } else {
+            podcasts.add(podcast);
+            return podcast;
+        }
+    }
     public ArrayList<String> mostLikedSongs() {
         List<Map.Entry<String, Integer>> entryList = new ArrayList<>(mostLikedSongs.entrySet());
 
@@ -447,6 +460,14 @@ public class User extends LibraryEntry{
         merches.add(merch);
         return merch;
     }
+    public Announcement addAnnouncement(Announcement announcement) {
+        for (Announcement announcement1: announcements) {
+            if (announcement1.getName().equals(announcement.getName()))
+                return null;
+        }
+        announcements.add(announcement);
+        return announcement;
+    }
     public ArrayList<String> getAlbumsList() {
         ArrayList<String> albumList = new ArrayList<>();
         for (Album album: this.albums) {
@@ -474,6 +495,32 @@ public class User extends LibraryEntry{
             eventList.add(message);
         }
         return eventList;
+    }
+    public ArrayList<String> getAnnouncementsList() {
+        ArrayList<String> announcementsList = new ArrayList<>();
+        for (Announcement announcement: this.announcements) {
+            String message;
+            message = announcement.getName() + ":\n\t" + announcement.getDescription() + "\n";
+            announcementsList.add(message);
+        }
+        return announcementsList;
+    }
+    public ArrayList<String> getPodcastsList() {
+        ArrayList<String> podcastsList = new ArrayList<>();
+        for (Podcast podcast: this.podcasts) {
+            String message1;
+            ArrayList<String> message2 = new ArrayList<>();
+            String message;
+            message1 = podcast.getName() + ":\n\t";
+//            System.out.println(" PODCASTUL " + podcast.getName());
+            for (Episode episode: podcast.getEpisodes()) {
+//                System.out.println(episode.getName() + " - " + episode.getDescription());
+                message2.add(episode.getName() + " - " + episode.getDescription());
+            }
+            message = message1 + message2 + "\n";
+            podcastsList.add(message);
+        }
+        return podcastsList;
     }
     public void simulateTime(int time) {
         player.simulatePlayer(time);

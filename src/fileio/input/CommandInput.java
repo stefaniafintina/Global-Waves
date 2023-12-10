@@ -1,5 +1,7 @@
 package fileio.input;
 
+import app.audio.Files.Episode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,7 @@ public final class CommandInput {
     private ArrayList<SongInput> songs;
     private String date;
     private double price;
+    private ArrayList<EpisodeInput> episodes;
     public CommandInput() {
     }
     public String getType() {
@@ -162,6 +165,14 @@ public final class CommandInput {
 
     public double getPrice() {
         return price;
+    }
+
+    public ArrayList<EpisodeInput> getEpisodes() {
+        return episodes;
+    }
+
+    public void setEpisodes(ArrayList<EpisodeInput> episodes) {
+        this.episodes = episodes;
     }
 
     public void setPrice(double price) {

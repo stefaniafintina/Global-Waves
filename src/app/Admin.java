@@ -2,6 +2,7 @@ package app;
 
 import app.Pages.ArtistsPage;
 import app.Pages.HomePage;
+import app.Pages.HostsPage;
 import app.artistsPage.Merch;
 import app.audio.Collections.Album;
 import app.audio.Collections.Playlist;
@@ -9,6 +10,7 @@ import app.audio.Collections.Podcast;
 import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.artistsPage.Event;
+import app.hostsPage.Announcement;
 import app.player.Player;
 import app.user.Artist;
 import app.user.User;
@@ -19,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import net.sf.saxon.ma.map.MapFunctionSet;
 import org.checkerframework.checker.formatter.FormatUtil;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.*;
 
@@ -35,6 +38,8 @@ public class Admin {
     @Getter
     @Setter
     private static List<Album> allAlbums = new ArrayList<>();
+    @Getter
+    @Setter
     private static List<User> hosts = new ArrayList<>();
     private static int timestamp = 0;
     private static boolean connectionStatus = true;
@@ -91,6 +96,14 @@ public class Admin {
         }
         return albums;
     }
+//    public static List<Podcast> getPodcast() {
+//        List<Podcast> podcasts = new ArrayList<>();
+//        for (User user : users) {
+//            if (user.getPodcasts() != null)
+//                podcasts.addAll(user.getPodcasts());
+//        }
+//        return podcasts;
+//    }
     public static User getUser(String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) {
@@ -185,6 +198,15 @@ public class Admin {
         }
         return 0;
     }
+    public static boolean checkIfHost(String username) {
+        for(User user: users) {
+            if (user.getUsername().equals(username)) {
+                return user.isHost();
+            }
+        }
+        return false;
+    }
+
     public static void addUser(User user) {
         if (checkIfUserExists(user.getUsername()) == null) {
             users.add(user);
@@ -195,15 +217,14 @@ public class Admin {
             }
             else if (user.isHost()) {
                 hosts.add(user);
+                user.setPage(new HostsPage(user));
             }
         }
     }
     public static String addAlbum(String username, String name, ArrayList<SongInput> songsList, Integer releaseYear, String description) {
-        int ok = 0;
         HashMap<String, Integer> numberOfAppearance= new HashMap<>();
         for (User myUser: users) {
             if (myUser.getUsername().equals(username)) {
-                ok = 1;
                 if (!myUser.isArtist()) {
                     return myUser.getUsername() + " is not an artist.";
                 }
@@ -253,14 +274,6 @@ public class Admin {
                     objectNode2.add(objectNode3);
                 }
                 return objectNode2;
-            }
-        }
-        return null;
-    }
-    public static ArrayList<String> getMostLikedSongs(String username) {
-        for (User user: users) {
-            if (user.getUsername().equals(username)) {
-                return user.mostLikedSongs();
             }
         }
         return null;
@@ -364,7 +377,6 @@ public class Admin {
                     for (Song song : songs) {
                         if (song.getArtist().equals(username)) {
                             user1.getMostLikedSongs().remove(song.getName());
-                            System.out.println(song.getName() + " " + song.getArtist());
                         }
                     }
                 }
@@ -388,6 +400,86 @@ public class Admin {
             if (user.isHost())
                 allUsers.add(user.getUsername());
         return allUsers;
+    }
+
+    public static String addPodcast (String username, ArrayList<EpisodeInput> episodesList, String name) {
+        if (checkIfUserExists(username) == null)
+            return username + " doesn't exist.";
+        if (!checkIfHost(username))
+            return username + " is not a host.";
+        for (User user:  users) {
+            if (user.getName().equals(username)) {
+                HashMap<String, Integer> numberOfAppearance = new HashMap<>();
+                for (Podcast podcast : user.getPodcasts()) {
+                    numberOfAppearance.put(podcast.getName(), 1);
+                }
+                if (numberOfAppearance.containsKey(name))
+                    return user.getUsername() + " has another podcast with the same name.";
+                for (EpisodeInput episode : episodesList) {
+                    if (numberOfAppearance.containsKey(episode.getName()))
+                        return user.getUsername() + " has another podcast with the same name.";
+                    numberOfAppearance.put(episode.getName(), numberOfAppearance.getOrDefault(episode.getName(), 0) + 1);
+                }
+                ArrayList<Episode> listOfEpisodes = new ArrayList<>();
+                for (EpisodeInput episode : episodesList) {
+                    listOfEpisodes.add(new Episode(episode.getName(), episode.getDuration(), episode.getDescription()));
+                }
+
+                Podcast podcast = new Podcast(name, username, listOfEpisodes);
+                podcasts.add(podcast);
+                user.addPodcast(podcast);
+                return username + " has added new podcast successfully.";
+            }
+        }
+        return null;
+    }
+    public static String addAnnouncement(String username, String name, String description) {
+        Announcement myAnnouncement = new Announcement(name, description);
+        if (checkIfUserExists(username) == null)
+            return username + " doesn't exist.";
+        if (!checkIfHost(username))
+            return username + " is not a host.";
+        if (getUser(username) != null)
+            for (Announcement announcement: getUser(username).getAnnouncements())
+                if (announcement.getName().equals(name))
+                    return username + " has already added an announcement with this name.";
+        getUser(username).addAnnouncement(myAnnouncement);
+        return username + " has successfully added new announcement.";
+    }
+    public static ArrayNode showPodcasts(String username) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        for (User user: users) {
+            if (user.getUsername().equals(username)) {
+                ArrayNode objectNode2 = objectNode.putArray("result");
+                for (Podcast podcast: user.getPodcasts()) {
+                    ArrayList<String> episodesName = new ArrayList<>();
+                    for (Episode episode: podcast.getEpisodes())
+                        episodesName.add(episode.getName());
+                    ObjectNode objectNode3 = objectMapper.createObjectNode();
+                    objectNode3.put("name", podcast.getName());
+                    objectNode3.put("episodes", objectMapper.valueToTree(episodesName));
+                    objectNode2.add(objectNode3);
+                }
+                return objectNode2;
+            }
+        }
+        return null;
+    }
+    public static String removeAnnouncement(String username, String name) {
+        if (checkIfUserExists(username) == null)
+            return username + " doesn't exist.";
+        if (!checkIfHost(username))
+            return username + " is not a host.";
+        if (getUser(username) != null) {
+           for (Announcement announcement: getUser(username).getAnnouncements()) {
+               if (announcement.getName().equals(name)) {
+                   getUser(username).getAnnouncements().remove(announcement);
+                   return username + " has successfully deleted the announcement.";
+               }
+           }
+           return username + " has no announcement with the given name.";
+        }
+        return null;
     }
     public static void reset() {
         connectionStatus = true;

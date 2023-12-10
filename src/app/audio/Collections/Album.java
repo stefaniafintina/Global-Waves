@@ -40,10 +40,5 @@ public final class Album extends AudioCollection {
     public AudioFile getTrackByIndex(int index) {
         return songs.get(index);
     }
-    public boolean hasSomethingBelongingTo(User user) {
-        for (Album album : user.getAlbums())
-            if (album.getOwner().equals(user.getName()))
-                return true;
-        return false;
-    }
+
 }
