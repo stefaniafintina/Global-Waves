@@ -3,6 +3,7 @@ package app;
 import app.Pages.ArtistsPage;
 import app.Pages.HomePage;
 import app.Pages.HostsPage;
+import app.Pages.LikedContentPage;
 import app.artistsPage.Merch;
 import app.audio.Collections.Album;
 import app.audio.Collections.Playlist;
@@ -206,6 +207,14 @@ public class Admin {
         }
         return false;
     }
+    public static boolean checkIfArtist(String username) {
+        for(User user: users) {
+            if (user.getUsername().equals(username)) {
+                return user.isArtist();
+            }
+        }
+        return false;
+    }
 
     public static void addUser(User user) {
         if (checkIfUserExists(user.getUsername()) == null) {
@@ -258,6 +267,41 @@ public class Admin {
             }
         }
         return "The username " + username + " doesn't exist.";
+    }
+    public static String removeAlbum(String username, String name) {
+        if (checkIfUserExists(username) == null)
+            return username + " doesn't exist.";
+        if (!checkIfArtist(username))
+            return username + " is not an artist.";
+        for (User user1 : users) {
+            if (!user1.getName().equals(username)) {
+                if (user1.getPage().getOwner().getName().equals(getUser(username).getPage().getOwner().getName())) {
+                    return username + " can't delete this album.";
+                }
+                if (user1.getPlayer().getSource() != null) {
+                    if (user1.getPlayer().getSource().getAudioFile().getName().equals(name))
+                        return username + " can't delete this album.";
+                    for (Album album: getAlbums()) {
+                        if (album.getName().equals(name)) {
+                            for (Song song: album.getSongs()) {
+                                if (song.getName().equals(user1.getPlayer().getSource().getAudioFile().getName()))
+                                    return username + " can't delete this album.";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (getUser(username) != null) {
+            for (Album album: getUser(username).getAlbums()) {
+                if (album.getName().equals(name)) {
+                    getUser(username).getAlbums().remove(album);
+                    return username + " has successfully deleted the album.";
+                }
+            }
+            return username + " has no album with the given name.";
+        }
+        return null;
     }
     public static ArrayNode showAlbums(String username) {
         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -379,6 +423,18 @@ public class Admin {
                             user1.getMostLikedSongs().remove(song.getName());
                         }
                     }
+                    for (Playlist playlist: user1.getFollowedPlaylists()) {
+                        if (playlist.getOwner().equals(username)) {
+                            user1.getFollowedPlaylists().remove(playlist);
+                        }
+                        for (Song song: playlist.getSongs()) {
+                            if (song.getArtist().equals(username))
+                                playlist.removeSong(song);
+                        }
+                        if (playlist.getSongs().isEmpty())
+                            user1.getFollowedPlaylists().remove(playlist);
+                    }
+
                 }
                 songs.removeIf(song -> song.getArtist().equals(username));
                 users.remove(user);
@@ -480,6 +536,25 @@ public class Admin {
            return username + " has no announcement with the given name.";
         }
         return null;
+    }
+    public static String changePage(String username, String nextPage) {
+        if (nextPage.equals("HomePage") || nextPage.equals("Home")) {
+            getUser(username).setPage(new HomePage(getUser(username)));
+            return username + " accessed " + nextPage + " successfully.";
+        }
+        if (nextPage.equals("LikedContent")) {
+            getUser(username).setPage(new LikedContentPage(getUser(username)));
+            return username + " accessed " + nextPage + " successfully.";
+        }
+        if (nextPage.equals("Artist page")) {
+            getUser(username).setPage(new ArtistsPage(getUser(username)));
+            return username + " accessed " + nextPage + " successfully.";
+        }
+        if (nextPage.equals("Host page")) {
+            getUser(username).setPage(new HostsPage(getUser(username)));
+            return username + " accessed " + nextPage + " successfully.";
+        }
+        return username + " is trying to access a non-existent page.";
     }
     public static void reset() {
         connectionStatus = true;

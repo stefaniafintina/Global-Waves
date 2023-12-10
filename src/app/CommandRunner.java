@@ -1,5 +1,6 @@
 package app;
 
+import app.audio.Collections.Playlist;
 import app.audio.Collections.PlaylistOutput;
 import app.audio.Files.Episode;
 import app.player.PlayerStats;
@@ -353,6 +354,14 @@ public class CommandRunner {
         objectNode.put("message", Admin.addAlbum(commandInput.getUsername(), commandInput.getName(), commandInput.getSongs(), commandInput.getReleaseYear(), commandInput.getDescription()));
         return objectNode;
     }
+    public static ObjectNode removeAlbum(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.removeAlbum(commandInput.getUsername(), commandInput.getName()));
+        return objectNode;
+    }
     public static ObjectNode showAlbums(CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
@@ -370,8 +379,12 @@ public class CommandRunner {
         if (Admin.isOnline(commandInput.getUsername()) == 0)
             objectNode.put("message", commandInput.getUsername() + " is offline.");
         else {
-            if (user != null)
+            if (user != null) {
+                System.out.println(commandInput.getTimestamp());
+                for (Playlist playlist: user.getFollowedPlaylists())
+                    System.out.println(playlist.getName());
                 objectNode.put("message", user.getPage().printCurrentPage());
+            }
         }
             return objectNode;
     }
@@ -437,6 +450,14 @@ public class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());;
         objectNode.put("message", Admin.removeAnnouncement(commandInput.getUsername(), commandInput.getName()));
+        return objectNode;
+    }
+    public static ObjectNode changePage(CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.changePage(commandInput.getUsername(), commandInput.getNextPage()));
         return objectNode;
     }
 }
