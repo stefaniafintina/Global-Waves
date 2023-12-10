@@ -25,6 +25,7 @@ public final class CommandInput {
     private String date;
     private double price;
     private ArrayList<EpisodeInput> episodes;
+    private String nextPage;
     public CommandInput() {
     }
     public String getType() {
@@ -177,6 +178,14 @@ public final class CommandInput {
 
     public void setPrice(double price) {
         this.price = price;
+    }
+
+    public String getNextPage() {
+        return nextPage;
+    }
+
+    public void setNextPage(String nextPage) {
+        this.nextPage = nextPage;
     }
 
     @Override

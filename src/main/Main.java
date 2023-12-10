@@ -61,7 +61,7 @@ public final class Main {
                 action(file.getName(), filepath);
             }
 
-            if (i == 5)
+            if (i == 7)
                 break;
             i++;
         }
@@ -118,6 +118,7 @@ public final class Main {
                 case "getOnlineUsers" -> outputs.add(CommandRunner.getOnlineUsers(command));
                 case "addUser" -> outputs.add(CommandRunner.addUser(command));
                 case "addAlbum" -> outputs.add(CommandRunner.addAlbum(command));
+                case "removeAlbum" -> outputs.add(CommandRunner.removeAlbum(command));
                 case "showAlbums" -> outputs.add(CommandRunner.showAlbums(command));
                 case "printCurrentPage" -> outputs.add(CommandRunner.printCurrentPage(command));
                 case "addEvent" -> outputs.add(CommandRunner.addEvent(command));
@@ -128,6 +129,7 @@ public final class Main {
                 case "showPodcasts" -> outputs.add(CommandRunner.showPodcasts(command));
                 case "addAnnouncement" -> outputs.add(CommandRunner.addAnnouncement(command));
                 case "removeAnnouncement" -> outputs.add(CommandRunner.removeAnnouncement(command));
+                case "changePage" -> outputs.add(CommandRunner.changePage(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }

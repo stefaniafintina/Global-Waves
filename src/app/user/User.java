@@ -522,6 +522,24 @@ public class User extends LibraryEntry{
         }
         return podcastsList;
     }
+    public ArrayList<String> getLikedSongsList() {
+        ArrayList<String> likedSongsList = new ArrayList<>();
+        for (Song song: this.getLikedSongs()) {
+            String message;
+            message = song.getName() + " - " + song.getArtist();
+            likedSongsList.add(message);
+        }
+        return likedSongsList;
+    }
+    public ArrayList<String> getFollowedPlaylistsList() {
+        ArrayList<String> followedPlaylistsList = new ArrayList<>();
+        for (Playlist playlist: this.getFollowedPlaylists()) {
+            String message;
+            message = playlist.getName() + " - " + playlist.getOwner();
+            followedPlaylistsList.add(message);
+        }
+        return followedPlaylistsList;
+    }
     public void simulateTime(int time) {
         player.simulatePlayer(time);
     }
