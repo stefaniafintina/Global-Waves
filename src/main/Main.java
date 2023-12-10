@@ -61,7 +61,7 @@ public final class Main {
                 action(file.getName(), filepath);
             }
 
-            if (i == 7)
+            if (i == 10)
                 break;
             i++;
         }
@@ -84,6 +84,7 @@ public final class Main {
 
         Admin.setUsers(library.getUsers());
         Admin.setArtists(new ArrayList<>());
+        Admin.setHosts(new ArrayList<>());
         Admin.setSongs(library.getSongs());
         Admin.setPodcasts(library.getPodcasts());
 
@@ -122,10 +123,12 @@ public final class Main {
                 case "showAlbums" -> outputs.add(CommandRunner.showAlbums(command));
                 case "printCurrentPage" -> outputs.add(CommandRunner.printCurrentPage(command));
                 case "addEvent" -> outputs.add(CommandRunner.addEvent(command));
+                case "removeEvent" -> outputs.add(CommandRunner.removeEvent(command));
                 case "addMerch" -> outputs.add(CommandRunner.addMerch(command));
                 case "deleteUser" -> outputs.add(CommandRunner.deleteUser(command));
                 case "getAllUsers" -> outputs.add(CommandRunner.getAllUsers(command));
                 case "addPodcast" -> outputs.add(CommandRunner.addPodcast(command));
+                case "removePodcast" -> outputs.add(CommandRunner.removePodcast(command));
                 case "showPodcasts" -> outputs.add(CommandRunner.showPodcasts(command));
                 case "addAnnouncement" -> outputs.add(CommandRunner.addAnnouncement(command));
                 case "removeAnnouncement" -> outputs.add(CommandRunner.removeAnnouncement(command));
