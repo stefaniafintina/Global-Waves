@@ -107,36 +107,25 @@ public class Admin {
         return null;
     }
     public static void updateTimestamp(int newTimestamp, String username) {
-        User user1 = getUser(username);
-        if (user1 != null) {
-            if (user1.isConnectionStatus()) {
-                int elapsed = newTimestamp - timestamp;
-                timestamp = newTimestamp;
-                if (elapsed == 0) {
-                    return;
-                }
-                for (User user : users) {
-                    user.simulateTime(elapsed);
-                }
-            }
-        } else {
-            int elapsed = newTimestamp - timestamp;
-            timestamp = newTimestamp;
-            if (elapsed == 0) {
-                return;
-            }
-            for (User user : users) {
-                user.simulateTime(elapsed);
-            }
-        }
+
+        int elapsed = newTimestamp - timestamp;
         timestamp = newTimestamp;
+        if (elapsed == 0) {
+            return;
+        }
+        for (User user : users) {
+            if (user.isConnectionStatus())
+                user.simulateTime(elapsed);
+        }
     }
 
     public static List<String> getTop5Songs() {
-        List<Song> sortedSongs = new ArrayList<>(songs);
-        sortedSongs.sort(Comparator.comparingInt(Song::getLikes).reversed());
+
+        List<Song> sortedSongs = new ArrayList<>(getSongs());
+        sortedSongs.sort(Comparator.comparingInt(Song::getLikes).reversed().thenComparing(getSongs()::indexOf));
         List<String> topSongs = new ArrayList<>();
         int count = 0;
+
         for (Song song : sortedSongs) {
             if (count >= 5) break;
             topSongs.add(song.getName());
@@ -160,25 +149,25 @@ public class Admin {
         return topPlaylists;
     }
     public static  ArrayList<String> getTop5Albums() {
-        HashMap<String, Integer> mostLikedAlbums = new HashMap<>();
+        ArrayList <Album> albumLikes = new ArrayList<>();
+
         for (User user: users) {
             for (Album album : user.getAlbums()) {
                 int likeCounter = 0;
                 for (Song song : album.getSongs()) {
                     likeCounter += song.getLikes();
                 }
-                mostLikedAlbums.put(album.getName(), likeCounter);
+                album.setLikes(likeCounter);
+                albumLikes.add(album);
             }
         }
-        List<Map.Entry<String, Integer>> entryList = new ArrayList<>(mostLikedAlbums.entrySet());
+        albumLikes.sort(Comparator.comparingInt(Album::getLikes).reversed().thenComparing(Album:: getName));
 
-        entryList.sort(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
-                        .thenComparing(Map.Entry.comparingByKey()));
         ArrayList<String> albumsList = new ArrayList<>();
         int cnt = 0;
-        for (Map.Entry<String, Integer> entry : entryList) {
+        for (Album album: albumLikes) {
             if (cnt < 5)
-                albumsList.add(entry.getKey());
+                albumsList.add(album.getName());
             else
                 break;
             cnt ++;
@@ -360,6 +349,8 @@ public class Admin {
         if (getUser(username) != null) {
             for (Album album: getUser(username).getAlbums()) {
                 if (album.getName().equals(name)) {
+                    for (Song song: album.getSongs())
+                        songs.remove(song);
                     getUser(username).getAlbums().remove(album);
                     return username + " has successfully deleted the album.";
                 }
@@ -533,6 +524,9 @@ public class Admin {
                     playlist.setFollowers(playlist.getFollowers() - 1);
                 }
 
+                for (Song song: getUser(username).getLikedSongs())
+                    song.setLikes(song.getLikes() -1);
+
                 getAlbums().removeIf(album -> album.getOwner().equals(username));
                 for (User user1 : users) {
                     user1.getLikedSongs().removeIf(song -> song.getArtist().equals(username));
@@ -547,13 +541,15 @@ public class Admin {
 
                     for (Playlist playlist : user1.getFollowedPlaylists()) {
                         for (Song song : playlist.getSongs()) {
-                            if (song.getArtist().equals(username))
+                            if (song.getArtist().equals(username)) {
                                 playlist.removeSong(song);
+                            }
                         }
                         if (playlist.getSongs().isEmpty())
                             user1.getFollowedPlaylists().remove(playlist);
                     }
                 }
+
                 songs.removeIf(song -> song.getArtist().equals(username));
                 users.remove(user);
                 return username + " was successfully deleted.";

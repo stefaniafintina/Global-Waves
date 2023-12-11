@@ -21,12 +21,16 @@ public final class Album extends AudioCollection {
     @Getter
     @Setter
     private String description;
+    @Getter
+    @Setter
+    private Integer likes;
 
     public Album(String name, String owner, Integer releaseYear, String description) {
         super(name, owner);
         this.songs = new ArrayList<>();
         this.releaseYear = releaseYear;
         this.description = description;
+        this.likes = 0;
     }
 
     public void addSong(Song song) {

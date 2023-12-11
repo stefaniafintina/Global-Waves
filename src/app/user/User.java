@@ -241,12 +241,23 @@ public class User extends LibraryEntry{
         if (likedSongs.contains(song)) {
             likedSongs.remove(song);
             song.dislike();
-            mostLikedSongs.put(song.getName(), mostLikedSongs.getOrDefault(song.getName(), 0) - 1);
+            for (Song song1: Admin.getSongs())
+                if (song1.getName().equals(song.getName())) {
+                    if (!song1.getLikes().equals(song.getLikes())) {
+                        song1.setLikes(song.getLikes());
+                    }
+                }
             return "Unlike registered successfully.";
         }
-        mostLikedSongs.put(song.getName(), mostLikedSongs.getOrDefault(song.getName(), 0) + 1);
         likedSongs.add(song);
         song.like();
+        for (Song song1: Admin.getSongs())
+            if (song1.getName().equals(song.getName())) {
+                if (!song1.getLikes().equals(song.getLikes())) {
+                    song1.setLikes(song.getLikes());
+                }
+            }
+        System.out.println("LIKE " + song + " " + song.getName());
         return "Like registered successfully.";
     }
 

@@ -1,6 +1,7 @@
 package app.audio.Files;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +14,8 @@ public final class Song extends AudioFile {
     private final String genre;
     private final Integer releaseYear;
     private final String artist;
+    @Setter
     private Integer likes;
-
     public Song(String name, Integer duration, String album, ArrayList<String> tags, String lyrics,
                 String genre, Integer releaseYear, String artist) {
         super(name, duration);
