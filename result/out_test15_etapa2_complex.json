@@ -5534,7 +5534,7 @@
   "timestamp" : 7300,
   "stats" : {
     "name" : "Love Love",
-    "remainedTime" : 235,
+    "remainedTime" : 231,
     "repeat" : "No Repeat",
     "shuffle" : true,
     "paused" : false
@@ -26046,11 +26046,11 @@
 }, {
   "command" : "getTop5Songs",
   "timestamp" : 14849,
-  "result" : [ "Stairway to Heaven", "Money Trees", "Under Pressure", "Dream On", "Whatever You Need" ]
+  "result" : [ "Utopia Harmony", "Celestial Soul", "Ethereal Rapture", "Whirlwind Whirlwind", "Night Utopia" ]
 }, {
   "command" : "getTop5Albums",
   "timestamp" : 14849,
-  "result" : [ "Teen Dreams", "Bad Hood", "Groovy View", "Breezy Autumn", "Electric Harmonies" ]
+  "result" : [ "Bad Guide", "Teen Dreams", "Bad Hood", "Heroic Hood", "Groovy View" ]
 }, {
   "command" : "getTop5Artists",
   "timestamp" : 14849,

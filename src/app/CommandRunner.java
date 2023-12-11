@@ -280,6 +280,7 @@ public class CommandRunner {
     }
 
     public static ObjectNode getTop5Songs(CommandInput commandInput) {
+        System.out.println(commandInput.getTimestamp());
         List<String> songs = Admin.getTop5Songs();
 
         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -371,7 +372,6 @@ public class CommandRunner {
         return objectNode;
     }
     public static ObjectNode printCurrentPage(CommandInput commandInput) {
-        System.out.println(commandInput.getTimestamp());
         User user = Admin.getUser(commandInput.getUsername());
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("user", commandInput.getUsername());

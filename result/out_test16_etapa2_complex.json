@@ -5497,7 +5497,7 @@
   "timestamp" : 7301,
   "stats" : {
     "name" : "Harmony Love",
-    "remainedTime" : 276,
+    "remainedTime" : 272,
     "repeat" : "No Repeat",
     "shuffle" : true,
     "paused" : false
@@ -25962,11 +25962,11 @@
 }, {
   "command" : "getTop5Songs",
   "timestamp" : 14850,
-  "result" : [ "Don't", "Whatever You Need", "Start Me Up", "The Man", "Delicate" ]
+  "result" : [ "Soul Pandora", "Adventure Infinity", "Starlight Rapture", "Pinnacle Cascade", "Heart Utopia" ]
 }, {
   "command" : "getTop5Albums",
   "timestamp" : 14850,
-  "result" : [ "Bad Dirt", "Teen Revolution", "Breezy View", "Alone Hood", "Groovy Hood" ]
+  "result" : [ "Bad Dirt", "Teen Revolution", "Breezy View", "Groovy Harmonies", "Alone Hood" ]
 }, {
   "command" : "getTop5Artists",
   "timestamp" : 14850,
