@@ -1,23 +1,33 @@
 package app;
 
-import app.audio.Collections.Playlist;
 import app.audio.Collections.PlaylistOutput;
-import app.audio.Files.Episode;
 import app.player.PlayerStats;
 import app.searchBar.Filters;
-import app.searchBar.SearchBar;
 import app.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.input.CommandInput;
-import fileio.input.UserInput;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommandRunner {
-    static ObjectMapper objectMapper = new ObjectMapper();
-    public static ObjectNode search(CommandInput commandInput) {
+/**
+ * The type Command runner.
+ */
+public final class CommandRunner {
+    private CommandRunner() {
+    }
+    /**
+     * The Object mapper.
+     */
+    public static ObjectMapper objectMapper = new ObjectMapper();
+    /**
+     * Search object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode search(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         Filters filters = new Filters(commandInput.getFilters());
         String type = commandInput.getType();
@@ -44,8 +54,13 @@ public class CommandRunner {
         objectNode.put("results", objectMapper.valueToTree(results));
         return objectNode;
     }
-
-    public static ObjectNode select(CommandInput commandInput) {
+    /**
+     * Select object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode select(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.select(commandInput.getItemNumber());
 
@@ -57,8 +72,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode load(CommandInput commandInput) {
+    /**
+     * Load object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode load(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.load();
 
@@ -70,8 +90,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode playPause(CommandInput commandInput) {
+    /**
+     * Play pause object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode playPause(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.playPause();
 
@@ -83,8 +108,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode repeat(CommandInput commandInput) {
+    /**
+     * Repeat object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode repeat(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.repeat();
 
@@ -96,8 +126,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode shuffle(CommandInput commandInput) {
+    /**
+     * Shuffle object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode shuffle(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         Integer seed = commandInput.getSeed();
         String message = user.shuffle(seed);
@@ -110,8 +145,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode forward(CommandInput commandInput) {
+    /**
+     * Forward object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode forward(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.forward();
 
@@ -123,8 +163,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode backward(CommandInput commandInput) {
+    /**
+     * Backward object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode backward(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.backward();
 
@@ -136,8 +181,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode like(CommandInput commandInput) {
+    /**
+     * Like object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode like(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.like();
 
@@ -149,8 +199,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode next(CommandInput commandInput) {
+    /**
+     * Next object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode next(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.next();
 
@@ -162,8 +217,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode prev(CommandInput commandInput) {
+    /**
+     * Prev object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode prev(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.prev();
 
@@ -175,10 +235,16 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode createPlaylist(CommandInput commandInput) {
+    /**
+     * Create playlist object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode createPlaylist(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
-        String message = user.createPlaylist(commandInput.getPlaylistName(), commandInput.getTimestamp());
+        String message = user.createPlaylist(commandInput.getPlaylistName(),
+                commandInput.getTimestamp());
 
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
@@ -188,8 +254,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode addRemoveInPlaylist(CommandInput commandInput) {
+    /**
+     * Add remove in playlist object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode addRemoveInPlaylist(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.addRemoveInPlaylist(commandInput.getPlaylistId());
 
@@ -201,8 +272,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode switchVisibility(CommandInput commandInput) {
+    /**
+     * Switch visibility object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode switchVisibility(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.switchPlaylistVisibility(commandInput.getPlaylistId());
 
@@ -214,8 +290,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode showPlaylists(CommandInput commandInput) {
+    /**
+     * Show playlists object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode showPlaylists(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         ArrayList<PlaylistOutput> playlists = user.showPlaylists();
 
@@ -227,8 +308,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode follow(CommandInput commandInput) {
+    /**
+     * Follow object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode follow(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String message = user.follow();
 
@@ -240,8 +326,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode status(CommandInput commandInput) {
+    /**
+     * Status object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode status(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         PlayerStats stats = user.getPlayerStats();
         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -252,8 +343,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode showLikedSongs(CommandInput commandInput) {
+    /**
+     * Show liked songs object node.
+     *
+     * @param commandInput the command input
+     * @return the object node
+     */
+    public static ObjectNode showLikedSongs(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         ArrayList<String> songs = user.showPreferredSongs();
 
@@ -265,8 +361,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode getPreferredGenre(CommandInput commandInput) {
+    /**
+     * Gets preferred genre.
+     *
+     * @param commandInput the command input
+     * @return the preferred genre
+     */
+    public static ObjectNode getPreferredGenre(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         String preferredGenre = user.getPreferredGenre();
 
@@ -278,9 +379,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode getTop5Songs(CommandInput commandInput) {
-        System.out.println(commandInput.getTimestamp());
+    /**
+     * Gets top 5 songs.
+     *
+     * @param commandInput the command input
+     * @return the top 5 songs
+     */
+    public static ObjectNode getTop5Songs(final CommandInput commandInput) {
         List<String> songs = Admin.getTop5Songs();
 
         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -290,8 +395,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode getTop5Playlists(CommandInput commandInput) {
+    /**
+     * Gets top 5 playlists.
+     *
+     * @param commandInput the command input
+     * @return the top 5 playlists
+     */
+    public static ObjectNode getTop5Playlists(final CommandInput commandInput) {
         List<String> playlists = Admin.getTop5Playlists();
 
         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -301,7 +411,13 @@ public class CommandRunner {
 
         return objectNode;
     }
-    public static ObjectNode switchConnectionStatus(CommandInput commandInput) {
+    /**
+     *This method updates the connection status of the specified user and
+     * returns an objectNode, containing information about the operation, including the
+     * command, user, timestamp, and a message
+     * indicating the result of the operation.
+     */
+    public static ObjectNode switchConnectionStatus(final CommandInput commandInput) {
        User checkIfUserExists = Admin.checkIfUserExists(commandInput.getUsername());
        boolean connectionStatus = Admin.switchConnectionStatus(commandInput.getUsername());
         ObjectNode objectNode = objectMapper.createObjectNode();
@@ -309,17 +425,24 @@ public class CommandRunner {
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
         if (checkIfUserExists == null) {
-            objectNode.put("message", "The username "+ commandInput.getUsername() + " doesn't exist.");
+            objectNode.put("message", "The username "
+                    + commandInput.getUsername() + " doesn't exist.");
         } else {
-            if (checkIfUserExists.isHost() || checkIfUserExists.isArtist())
+            if (checkIfUserExists.isHost() || checkIfUserExists.isArtist()) {
                 objectNode.put("message", commandInput.getUsername() + " is not a normal user.");
-            else
-                objectNode.put("message", commandInput.getUsername() + " has changed status successfully.");
+            } else {
+                objectNode.put("message", commandInput.getUsername()
+                        + " has changed status successfully.");
+            }
         }
         return objectNode;
     }
-
-    public static ObjectNode getOnlineUsers(CommandInput commandInput) {
+    /**
+     *This method is used for getting all the online user
+     * this operation is possible after determining
+     * the status of each user in Admin class
+     */
+    public static ObjectNode getOnlineUsers(final CommandInput commandInput) {
         List<String> onlineUsers = Admin.getOnlineUsers();
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
@@ -328,42 +451,65 @@ public class CommandRunner {
 
         return objectNode;
     }
-
-    public static ObjectNode addUser(CommandInput commandInput) {
-        User user = new User(commandInput.getUsername(), commandInput.getAge(), commandInput.getCity());
+    /**
+     *This method is used to add a user and to check
+     * if the new user will be a host, an artist or a normal user
+     * This command will print different messages if a user already exists
+     * or if it can be added
+     */
+    public static ObjectNode addUser(final CommandInput commandInput) {
+        User user = new User(commandInput.getUsername(), commandInput.getAge(),
+                commandInput.getCity());
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
         if (Admin.checkIfUserExists(commandInput.getUsername()) == null) {
-            if (commandInput.getType().equals("host"))
+            if (commandInput.getType().equals("host")) {
                 user.setHost(true);
-            else if (commandInput.getType().equals("artist"))
+            } else if (commandInput.getType().equals("artist")) {
                 user.setArtist(true);
+            }
             Admin.addUser(user);
-            objectNode.put("message", "The username " +  commandInput.getUsername() + " has been added successfully.");
+            objectNode.put("message", "The username " +  commandInput.getUsername()
+                    + " has been added successfully.");
         } else {
-            objectNode.put("message", "The username " +  commandInput.getUsername() + " is already taken.");
+            objectNode.put("message", "The username " +  commandInput.getUsername()
+                    + " is already taken.");
         }
         return objectNode;
     }
-    public static ObjectNode addAlbum(CommandInput commandInput) {
+    /**
+     * Adds a new album
+     * @param commandInput the command input
+     */
+    public static ObjectNode addAlbum(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.addAlbum(commandInput.getUsername(), commandInput.getName(), commandInput.getSongs(), commandInput.getReleaseYear(), commandInput.getDescription()));
+        objectNode.put("message", Admin.addAlbum(commandInput.getUsername(),
+                commandInput.getName(), commandInput.getSongs(), commandInput.getReleaseYear(),
+                commandInput.getDescription()));
         return objectNode;
     }
-    public static ObjectNode removeAlbum(CommandInput commandInput) {
+    /**
+     * Removes an Album from a user's list of albums
+     * and also deletes it from the list which contains all the albums
+     */
+    public static ObjectNode removeAlbum(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.removeAlbum(commandInput.getUsername(), commandInput.getName()));
+        objectNode.put("message", Admin.removeAlbum(commandInput.getUsername(),
+                commandInput.getName()));
         return objectNode;
     }
-    public static ObjectNode showAlbums(CommandInput commandInput) {
+    /**
+     * Shows the list of albums for the given artist
+     */
+    public static ObjectNode showAlbums(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
@@ -371,46 +517,64 @@ public class CommandRunner {
         objectNode.put("result", Admin.showAlbums(commandInput.getUsername()));
         return objectNode;
     }
-    public static ObjectNode printCurrentPage(CommandInput commandInput) {
+    /**
+     * Prints the current page of a user if the user is online
+     */
+    public static ObjectNode printCurrentPage(final CommandInput commandInput) {
         User user = Admin.getUser(commandInput.getUsername());
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        if (Admin.isOnline(commandInput.getUsername()) == 0)
+        if (Admin.isOnline(commandInput.getUsername()) == 0) {
             objectNode.put("message", commandInput.getUsername() + " is offline.");
-        else {
+        } else {
             if (user != null) {
                 objectNode.put("message", user.getPage().printCurrentPage());
             }
         }
             return objectNode;
     }
-    public static ObjectNode addEvent(CommandInput commandInput) {
+    /**
+     *Adds a new event on an artist page
+     */
+    public static ObjectNode addEvent(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.addEvent(commandInput.getUsername(), commandInput.getName(), commandInput.getDate(), commandInput.getDescription()));
+        objectNode.put("message", Admin.addEvent(commandInput.getUsername(),
+                commandInput.getName(), commandInput.getDate(), commandInput.getDescription()));
         return objectNode;
     }
-    public static ObjectNode removeEvent(CommandInput commandInput) {
+    /**
+     *Removes a new event from an artist page
+     */
+    public static ObjectNode removeEvent(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.removeEvent(commandInput.getUsername(), commandInput.getName()));
+        objectNode.put("message", Admin.removeEvent(commandInput.getUsername(),
+                commandInput.getName()));
         return objectNode;
     }
-    public static ObjectNode addMerch(CommandInput commandInput) {
+    /**
+     * Adds a merch on an artist page
+     */
+    public static ObjectNode addMerch(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.addMerch(commandInput.getUsername(), commandInput.getName(), commandInput.getPrice(), commandInput.getDescription()));
+        objectNode.put("message", Admin.addMerch(commandInput.getUsername(),
+                commandInput.getName(), commandInput.getPrice(), commandInput.getDescription()));
         return objectNode;
     }
-    public static ObjectNode deleteUser(CommandInput commandInput) {
+    /**
+     * Deletes a user if it's possible
+     */
+    public static ObjectNode deleteUser(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
@@ -418,7 +582,11 @@ public class CommandRunner {
         objectNode.put("message", Admin.deleteUser(commandInput.getUsername()));
         return objectNode;
     }
-    public static ObjectNode getAllUsers(CommandInput commandInput) {
+    /**
+     * Gets a list with all users, including artists, hosts, online
+     * and offline users
+     */
+    public static ObjectNode getAllUsers(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
@@ -426,23 +594,34 @@ public class CommandRunner {
         objectNode.put("result", objectMapper.valueToTree(resultList));
         return objectNode;
     }
-    public static ObjectNode addPodcast(CommandInput commandInput) {
+    /**
+     * Adds a new podcast
+     */
+    public static ObjectNode addPodcast(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
-        objectNode.put("timestamp", commandInput.getTimestamp());;
-        objectNode.put("message", Admin.addPodcast(commandInput.getUsername(), commandInput.getEpisodes(), commandInput.getName()));
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.addPodcast(commandInput.getUsername(),
+                commandInput.getEpisodes(), commandInput.getName()));
         return objectNode;
     }
-    public static ObjectNode removePodcast(CommandInput commandInput) {
+    /**
+     * Removes a podcast
+     */
+    public static ObjectNode removePodcast(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
-        objectNode.put("timestamp", commandInput.getTimestamp());;
-        objectNode.put("message", Admin.removePodcast(commandInput.getUsername(), commandInput.getName()));
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.removePodcast(commandInput.getUsername(),
+                commandInput.getName()));
         return objectNode;
     }
-    public static ObjectNode showPodcasts(CommandInput commandInput) {
+    /**
+     * Shows a list of podcasts
+     */
+    public static ObjectNode showPodcasts(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
@@ -450,38 +629,62 @@ public class CommandRunner {
         objectNode.put("result", Admin.showPodcasts(commandInput.getUsername()));
         return objectNode;
     }
-    public static ObjectNode addAnnouncement(CommandInput commandInput) {
-        ObjectNode objectNode = objectMapper.createObjectNode();
-        objectNode.put("command", commandInput.getCommand());
-        objectNode.put("user", commandInput.getUsername());
-        objectNode.put("timestamp", commandInput.getTimestamp());;
-        objectNode.put("message", Admin.addAnnouncement(commandInput.getUsername(), commandInput.getName(), commandInput.getDescription()));
-        return objectNode;
-    }
-    public static ObjectNode removeAnnouncement(CommandInput commandInput) {
-        ObjectNode objectNode = objectMapper.createObjectNode();
-        objectNode.put("command", commandInput.getCommand());
-        objectNode.put("user", commandInput.getUsername());
-        objectNode.put("timestamp", commandInput.getTimestamp());;
-        objectNode.put("message", Admin.removeAnnouncement(commandInput.getUsername(), commandInput.getName()));
-        return objectNode;
-    }
-    public static ObjectNode changePage(CommandInput commandInput) {
+    /**
+     * Adds a new Announcement on a host page
+     */
+    public static ObjectNode addAnnouncement(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.changePage(commandInput.getUsername(), commandInput.getNextPage()));
+        objectNode.put("message", Admin.addAnnouncement(commandInput.getUsername(),
+                commandInput.getName(), commandInput.getDescription()));
         return objectNode;
     }
-    public static ObjectNode getTop5Albums(CommandInput commandInput) {
+    /**
+     * Removes an Announcement
+     */
+    public static ObjectNode removeAnnouncement(final CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.removeAnnouncement(commandInput.getUsername(),
+                commandInput.getName()));
+        return objectNode;
+    }
+    /**
+     * Changes the page of a specific user
+     */
+    public static ObjectNode changePage(final CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.changePage(commandInput.getUsername(),
+                commandInput.getNextPage()));
+        return objectNode;
+    }
+    /**
+     * Gets top 5 albums.
+     *
+     * @param commandInput the command input
+     * @return the top 5 albums
+     */
+    public static ObjectNode getTop5Albums(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
         objectNode.put("result", objectMapper.valueToTree(Admin.getTop5Albums()));
         return objectNode;
     }
-    public static ObjectNode getTop5Artists(CommandInput commandInput) {
+    /**
+     * Gets top 5 artists.
+     *
+     * @param commandInput the command input
+     * @return the top 5 artists 
+     */
+    public static ObjectNode getTop5Artists(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("timestamp", commandInput.getTimestamp());
