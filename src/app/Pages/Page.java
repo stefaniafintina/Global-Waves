@@ -9,10 +9,13 @@ public abstract class Page {
     @Setter
     private User owner;
 
-    public Page(User owner) {
+    public Page(final User owner) {
         this.owner = owner;
     }
 
-
+    /**
+     * Prints the current page using
+     * to required format
+     */
     public abstract String printCurrentPage();
 }

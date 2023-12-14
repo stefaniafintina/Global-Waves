@@ -1,16 +1,12 @@
 package app.audio.Collections;
 
-import app.Admin;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Song;
-import app.user.User;
-import fileio.input.SongInput;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 
-@Getter
 public final class Album extends AudioCollection {
     @Getter
     @Setter
@@ -25,23 +21,31 @@ public final class Album extends AudioCollection {
     @Setter
     private Integer likes;
 
-    public Album(String name, String owner, Integer releaseYear, String description) {
+    /**
+     */
+    public Album(final String name, final String owner, final Integer releaseYear,
+                 final String description) {
         super(name, owner);
         this.songs = new ArrayList<>();
         this.releaseYear = releaseYear;
         this.description = description;
         this.likes = 0;
     }
-
-    public void addSong(Song song) {
+    /**
+     */
+    public void addSong(final Song song) {
         songs.add(song);
     }
+    /**
+     */
     @Override
     public int getNumberOfTracks() {
         return songs.size();
     }
+    /**
+     */
     @Override
-    public AudioFile getTrackByIndex(int index) {
+    public AudioFile getTrackByIndex(final int index) {
         return songs.get(index);
     }
 

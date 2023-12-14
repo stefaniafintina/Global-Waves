@@ -1,1 +1,5 @@
-Files to process must be specified, found 0.
+Starting audit...
+[ERROR] /Users/stefaniafintina/Desktop/teme poo/poo-etapa2/./src/app/CommandRunner.java:23:32: Variable 'objectMapper' must be private and have accessor methods. [VisibilityModifier]
+[ERROR] /Users/stefaniafintina/Desktop/teme poo/poo-etapa2/./src/app/player/Player.java:232:32: Parameter time should be final. [FinalParameters]
+Audit done.
+Checkstyle ends with 2 errors.

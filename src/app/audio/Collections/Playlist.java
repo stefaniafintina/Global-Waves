@@ -1,9 +1,7 @@
 package app.audio.Collections;
 
-import app.Admin;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Song;
-import app.user.User;
 import app.utils.Enums;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,31 +15,37 @@ public final class Playlist extends AudioCollection {
     private Enums.Visibility visibility;
     private Integer followers;
     private int timestamp;
-
-    public Playlist(String name, String owner) {
+    /**
+     */
+    public Playlist(final String name, final String owner) {
         this(name, owner, 0);
     }
-
-    public Playlist(String name, String owner, int timestamp) {
+    /**
+     */
+    public Playlist(final String name, final String owner, final int timestamp) {
         super(name, owner);
         this.songs = new ArrayList<>();
         this.visibility = Enums.Visibility.PUBLIC;
         this.followers = 0;
         this.timestamp = timestamp;
     }
-
-    public boolean containsSong(Song song) {
+    /**
+     */
+    public boolean containsSong(final Song song) {
         return songs.contains(song);
     }
-
-    public void addSong(Song song) {
+    /**
+     */
+    public void addSong(final Song song) {
         songs.add(song);
     }
-
-    public void removeSong(Song song) {
+    /**
+     */
+    public void removeSong(final Song song) {
         songs.remove(song);
     }
-
+    /**
+     */
     public void switchVisibility() {
         if (visibility == Enums.Visibility.PUBLIC) {
             visibility = Enums.Visibility.PRIVATE;
@@ -49,37 +53,45 @@ public final class Playlist extends AudioCollection {
             visibility = Enums.Visibility.PUBLIC;
         }
     }
-
+    /**
+     */
     public void increaseFollowers() {
         followers++;
     }
-
+    /**
+     */
     public void decreaseFollowers() {
         followers--;
     }
-
+    /**
+     */
     @Override
     public int getNumberOfTracks() {
         return songs.size();
     }
-
+    /**
+     */
     @Override
-    public AudioFile getTrackByIndex(int index) {
+    public AudioFile getTrackByIndex(final int index) {
         return songs.get(index);
     }
-
+    /**
+     */
     @Override
-    public boolean isVisibleToUser(String user) {
-        return this.getVisibility() == Enums.Visibility.PUBLIC ||
-                (this.getVisibility() == Enums.Visibility.PRIVATE && this.getOwner().equals(user));
+    public boolean isVisibleToUser(final String user) {
+        return this.getVisibility() == Enums.Visibility.PUBLIC
+                || (this.getVisibility() == Enums.Visibility.PRIVATE
+                        && this.getOwner().equals(user));
     }
-
+    /**
+     */
     @Override
-    public boolean matchesFollowers(String followers) {
-        return filterByFollowersCount(this.getFollowers(), followers);
+    public boolean matchesFollowers(final String newFollowers) {
+        return filterByFollowersCount(this.getFollowers(), newFollowers);
     }
-
-    private static boolean filterByFollowersCount(int count, String query) {
+    /**
+     */
+    private static boolean filterByFollowersCount(final int count, final String query) {
         if (query.startsWith("<")) {
             return count < Integer.parseInt(query.substring(1));
         } else if (query.startsWith(">")) {
