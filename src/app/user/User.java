@@ -320,7 +320,7 @@ public final class User extends LibraryEntry {
         if (likedSongs.contains(song)) {
             likedSongs.remove(song);
             song.dislike();
-            for (Song song1: Admin.getSongs()) {
+            for (Song song1: Admin.getInstance().getSongs()) {
                 if (song1.getName().equals(song.getName())) {
                     if (!song1.getLikes().equals(song.getLikes())) {
                         song1.setLikes(song.getLikes());
@@ -331,7 +331,7 @@ public final class User extends LibraryEntry {
         }
         likedSongs.add(song);
         song.like();
-        for (Song song1: Admin.getSongs()) {
+        for (Song song1: Admin.getInstance().getSongs()) {
             if (song1.getName().equals(song.getName())) {
                 if (!song1.getLikes().equals(song.getLikes())) {
                     song1.setLikes(song.getLikes());

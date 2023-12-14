@@ -1,5 +1,7 @@
 Starting audit...
+[ERROR] /Users/stefaniafintina/Desktop/teme poo/poo-etapa2/./src/app/Admin.java:67:5: Missing a Javadoc comment. [MissingJavadocMethod]
 [ERROR] /Users/stefaniafintina/Desktop/teme poo/poo-etapa2/./src/app/CommandRunner.java:23:32: Variable 'objectMapper' must be private and have accessor methods. [VisibilityModifier]
+[ERROR] /Users/stefaniafintina/Desktop/teme poo/poo-etapa2/./src/app/CommandRunner.java:422: Line is longer than 100 characters (found 105). [LineLength]
 [ERROR] /Users/stefaniafintina/Desktop/teme poo/poo-etapa2/./src/app/player/Player.java:232:32: Parameter time should be final. [FinalParameters]
 Audit done.
-Checkstyle ends with 2 errors.
+Checkstyle ends with 4 errors.

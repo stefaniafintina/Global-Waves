@@ -79,14 +79,14 @@ public final class Main {
                 + filePath1), CommandInput[].class);
         ArrayNode outputs = objectMapper.createArrayNode();
 
-        Admin.setUsers(library.getUsers());
-        Admin.setArtists(new ArrayList<>());
-        Admin.setHosts(new ArrayList<>());
-        Admin.setSongs(library.getSongs());
-        Admin.setPodcasts(library.getPodcasts());
+        Admin.getInstance().setUsers(library.getUsers());
+        Admin.getInstance().setArtists(new ArrayList<>());
+        Admin.getInstance().setHosts(new ArrayList<>());
+        Admin.getInstance().setSongs(library.getSongs());
+        Admin.getInstance().setPodcasts(library.getPodcasts());
 
         for (CommandInput command : commands) {
-            Admin.updateTimestamp(command.getTimestamp(), command.getUsername());
+            Admin.getInstance().updateTimestamp(command.getTimestamp(), command.getUsername());
 
             String commandName = command.getCommand();
 
@@ -141,6 +141,6 @@ public final class Main {
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), outputs);
 
-        Admin.reset();
+        Admin.getInstance().reset();
     }
 }
