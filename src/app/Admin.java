@@ -12,6 +12,7 @@ import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.artistsPage.Event;
 import app.hostsPage.Announcement;
+import app.player.Player;
 import app.user.User;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,11 +23,7 @@ import fileio.input.PodcastInput;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static app.CommandRunner.objectMapper;
 
@@ -48,7 +45,7 @@ public final class Admin {
     public static final int MAGIC_NUMBER10 = 10;
     public static final int MAGIC_NUMBER100 = 100;
     public static final int MAGIC_NUMBER1000 = 1000;
-
+    @Getter
     private List<User> users = new ArrayList<>();
     private List<Song> songs = new ArrayList<>();
     private List<Podcast> podcasts = new ArrayList<>();
@@ -435,19 +432,17 @@ public final class Admin {
                 // Create and add the new album to the user's profile
                 Album album = new Album(name, username, releaseYear, description);
                 for (SongInput song: songsList) {
-                    album.addSong(new Song(song.getName(), song.getDuration(), song.getAlbum(),
+                    Song newSong = new Song(song.getName(), song.getDuration(), song.getAlbum(),
                             song.getTags(), song.getLyrics(), song.getGenre(),
-                            song.getReleaseYear(), song.getArtist()));
+                            song.getReleaseYear(), song.getArtist());
+                    album.addSong(newSong);
+                    if (!songs.contains(newSong)) {
+                        songs.add(newSong);
+                    }
                 }
                 myUser.addAlbum(album);
                 // Add new songs to the global songs list if they don't already exist
-                for (SongInput song: songsList) {
-                    if (!songs.contains(song)) {
-                        songs.add(new Song(song.getName(), song.getDuration(), song.getAlbum(),
-                                song.getTags(), song.getLyrics(), song.getGenre(),
-                                song.getReleaseYear(), song.getArtist()));
-                    }
-                }
+
                 return myUser.getUsername() + " has added new album successfully.";
             }
         }
@@ -1039,6 +1034,139 @@ public final class Admin {
             return username + " accessed " + nextPage + " successfully.";
         }
         return username + " is trying to access a non-existent page.";
+    }
+
+
+    public ObjectNode wrappedUser(String username) {
+
+        User user = getUser(username);
+        if (user != null) {
+            user.orderByNumOfListen();
+            ObjectNode objectNode = objectMapper.createObjectNode();
+
+            ObjectNode objectNodeResult = objectMapper.createObjectNode();
+
+            int cnt = 0;
+            ObjectNode objectNodeS = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeS.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeA = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeA.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeG = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getMostListenedGenres().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeG.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeAlb = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedAlbums().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeAlb.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeEp = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedEpisodes().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeEp.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            objectNodeResult.set("topArtists",objectNodeA);
+            objectNodeResult.set("topGenres",objectNodeG);
+            objectNodeResult.set("topSongs", objectNodeS);
+            objectNodeResult.set("topAlbums", objectNodeAlb);
+            objectNodeResult.set("topEpisodes",objectNodeEp);
+            return objectNodeResult;
+        }
+        return null;
+    }
+
+    public ObjectNode wrappedArtist(String username) {
+        User user = getUser(username);
+        if (user != null) {
+            user.orderByNumOfListen();
+            ObjectNode objectNodeResult = objectMapper.createObjectNode();
+
+            int cnt = 0;
+            ObjectNode objectNodeS = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeS.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeAlb = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedAlbums().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeAlb.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ArrayNode objectNodeFans = objectMapper.createArrayNode();
+            for (Map.Entry<String, Integer> entry : user.getFans().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeFans.add(entry.getKey());
+                }
+                cnt++;
+            }
+
+            objectNodeResult.set("topAlbums", objectNodeAlb);
+            objectNodeResult.set("topSongs", objectNodeS);
+            objectNodeResult.set("topFans", objectNodeFans);
+            objectNodeResult.put("listeners", user.getFans().size());
+            return objectNodeResult;
+        }
+        return null;
+    }
+
+    public String getPremiumSubscription(final String username) {
+        User user = getUser(username);
+        if (user != null) {
+            if (user.isPremium()) {
+                return username + " is already a premium user.";
+            } else {
+                user.setPremium(true);
+                return username + " bought the subscription successfully.";
+            }
+        }
+        return "The username " + username + " doesn't exist.";
+    }
+
+    public String cancelSubscription(final String username) {
+        User user = getUser(username);
+        if (user != null) {
+            if (user.isPremium()) {
+                user.setPremium(false);
+                return username + " cancelled the subscription successfully.";
+            } else {
+                return username + " is not a premium user.";
+            }
+        }
+        return "The username " + username + " doesn't exist.";
     }
     /**
      * reset

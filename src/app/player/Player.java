@@ -1,13 +1,18 @@
 package app.player;
 
+import app.Admin;
+import app.audio.Collections.Album;
 import app.audio.Collections.AudioCollection;
 import app.audio.Files.AudioFile;
+import app.audio.Files.Song;
 import app.audio.LibraryEntry;
+import app.user.User;
 import app.utils.Enums;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The type Player.
@@ -22,9 +27,8 @@ public final class Player {
     private PlayerSource source;
     @Getter
     private String type;
-
     private ArrayList<PodcastBookmark> bookmarks = new ArrayList<>();
-
+    AudioFile lastAudioFile = null;
     /**
      * Instantiates a new Player.
      */
@@ -229,11 +233,40 @@ public final class Player {
      * the current source is null.
      * @throws IllegalArgumentException If the provided time is negative.
      */
-    public void simulatePlayer(int time) {
+    public void simulatePlayer(int time, User user) {
+        User artist = null;
+
+
         if (!paused && source != null) {
+            int ok = 0;
             while (time >= source.getDuration()) {
+
                 time -= source.getDuration();
+                lastAudioFile = this.getCurrentAudioFile();
                 next();
+                if (this.getCurrentAudioFile() != null && this.type.equals("album")) {
+                    Integer currentCount = user.getListenedSongs().getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                    Integer currCnt = user.getListenedAlbums().getOrDefault(source.getAudioCollection().getName(), 0);
+                    user.getListenedAlbums().put(source.getAudioCollection().getName(), currCnt + 1);
+                    user.getListenedSongs().put(this.getCurrentAudioFile().getName(), currentCount + 1);
+                    user.addListenedGenre(((Song)this.getCurrentAudioFile()).getGenre());
+                    user.addListenedArtist(((Song)this.getCurrentAudioFile()).getArtist());
+                    for (Album album: Admin.getInstance().getAlbums()) {
+                        if (album.getName().equals(source.getAudioCollection().getName()) && album.getSongs().contains((Song)this.getCurrentAudioFile())) {
+                            artist = Admin.getInstance().getUser(album.getOwner());
+                            if (artist != null) {
+                                Integer countArtist = artist.getListenedSongs().getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                                Integer countArtistsAlbum = artist.getListenedAlbums().getOrDefault(album.getName(), 0);
+                                Integer fansCount = artist.getFans().getOrDefault(user.getName(), 0);
+
+                                artist.getListenedSongs().put(this.getCurrentAudioFile().getName(), countArtist + 1);
+                                artist.getListenedAlbums().put(album.getName(), countArtistsAlbum + 1);
+                                artist.getFans().put(user.getName(), fansCount + 1);
+                            }
+                            break;
+                        }
+                    }
+                }
                 if (paused) {
                     break;
                 }
@@ -241,6 +274,7 @@ public final class Player {
             if (!paused) {
                 source.skip(-time);
             }
+
         }
     }
     /**

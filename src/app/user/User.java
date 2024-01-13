@@ -20,12 +20,13 @@ import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.searchBar.SearchBar;
 import app.utils.Enums;
+import fileio.input.SongInput;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * The type User.
  */
@@ -83,6 +84,35 @@ public final class User extends LibraryEntry {
     @Getter
     @Setter
     private ArrayList<Podcast> podcasts;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedSongs;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> artistListenedSongs;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedAlbums;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedEpisodes;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> mostListenedArtists;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> mostListenedGenres;
+    @Getter
+    private LinkedHashMap<String, Integer> fans;
+    @Getter
+    @Setter
+    private boolean premium;
+    @Getter
+    @Setter
+    private double songRevenue;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> mostProfitableSong;
 
     /**
      * Instantiates a new User.
@@ -115,6 +145,15 @@ public final class User extends LibraryEntry {
         selectedType = null;
         podcasts = new ArrayList<>();
         announcements = new ArrayList<>();
+        listenedEpisodes = new LinkedHashMap<>();
+        listenedSongs = new LinkedHashMap<>();
+        mostListenedArtists = new LinkedHashMap<>();
+        mostListenedGenres = new LinkedHashMap<>();
+        listenedAlbums = new LinkedHashMap<>();
+        fans = new LinkedHashMap<>();
+        artistListenedSongs = new LinkedHashMap<>();
+        premium = false;
+        mostProfitableSong = new LinkedHashMap<>();
     }
     /**
      * Search array list.
@@ -153,7 +192,6 @@ public final class User extends LibraryEntry {
             return "Please conduct a search before making a selection.";
         }
         lastSearched = false;
-
         LibraryEntry selected = searchBar.select(itemNumber);
 
         if (selected == null) {
@@ -175,6 +213,54 @@ public final class User extends LibraryEntry {
      * @return the string
      */
     public String load() {
+        if (searchBar.getLastSearchType().equals("song")) {
+            Integer currentCount = this.listenedSongs.getOrDefault(searchBar.getLastSelected().getName(), 0);
+            this.listenedSongs.put(searchBar.getLastSelected().getName(), currentCount + 1);
+            for (Album album: Admin.getInstance().getAlbums()) {
+                if (album.getSongs().contains((Song)searchBar.getLastSelected())) {
+                    Song song = (Song) searchBar.getLastSelected();
+                    Integer currCnt = listenedAlbums.getOrDefault(album.getName(), 0);
+                    this.listenedAlbums.put(album.getName(), currCnt + 1);
+                    this.addListenedArtist(song.getArtist());
+                    this.addListenedGenre(song.getGenre());
+                    User artist = Admin.getInstance().getUser(song.getArtist());
+                    if (artist != null) {
+                        Integer countArtist = artist.getListenedSongs().getOrDefault(song.getName(), 0);
+                        Integer countArtistsAlbum = artist.getListenedAlbums().getOrDefault(album.getName(), 0);
+                        Integer fansCount = artist.getFans().getOrDefault(username, 0);
+
+                        artist.getListenedSongs().put(song.getName(), countArtist + 1);
+                        artist.getListenedAlbums().put(album.getName(), countArtistsAlbum + 1);
+
+                        artist.getFans().put(username, fansCount + 1);
+                    }
+                }
+            }
+        } else if (searchBar.getLastSearchType().equals("album")) {
+            Song firstSongInAlbum = ((Album) searchBar.getLastSelected()).getSongs().get(0);
+            Integer currentCount = this.getListenedSongs().getOrDefault(firstSongInAlbum.getName(), 0);
+            Integer currCnt = this.getListenedAlbums().getOrDefault(((Album) searchBar.getLastSelected()).getName(), 0);
+            this.getListenedAlbums().put(((Album) searchBar.getLastSelected()).getName(), currCnt + 1);
+            this.getListenedSongs().put(firstSongInAlbum.getName(), currentCount + 1);
+            this.addListenedGenre((firstSongInAlbum).getGenre());
+            this.addListenedArtist((firstSongInAlbum).getArtist());
+
+            for (Album album: Admin.getInstance().getAlbums()) {
+                if (album.getName().equals(((Album) searchBar.getLastSelected()).getName()) && album.getSongs().contains(firstSongInAlbum)) {
+                    User artist = Admin.getInstance().getUser(album.getOwner());
+                    if (artist != null) {
+                        Integer countArtist = artist.getListenedSongs().getOrDefault(firstSongInAlbum.getName(), 0);
+                        Integer countArtistsAlbum = artist.getListenedAlbums().getOrDefault(album.getName(), 0);
+                        Integer fansCount = artist.getFans().getOrDefault(this.getName(), 0);
+
+                        artist.getListenedSongs().put(firstSongInAlbum.getName(), countArtist + 1);
+                        artist.getListenedAlbums().put(album.getName(), countArtistsAlbum + 1);
+                        artist.getFans().put(this.getName(), fansCount + 1);
+                    }
+                    break;
+                }
+            }
+        }
         if (searchBar.getLastSelected() == null) {
             return "Please select a source before attempting to load.";
         }
@@ -213,6 +299,7 @@ public final class User extends LibraryEntry {
      * @return the string
      */
     public String repeat() {
+
         if (player.getCurrentAudioFile() == null) {
             return "Please load a source before setting the repeat status.";
         }
@@ -238,7 +325,6 @@ public final class User extends LibraryEntry {
             default:
                 return null;
         }
-
         return "Repeat mode changed to %s.".formatted(repeatStatus);
     }
     /**
@@ -690,15 +776,132 @@ public final class User extends LibraryEntry {
         }
         return followedPlaylistsList;
     }
+
+    public void addListenedArtist(String artist) {
+        Integer currentCount = this.mostListenedArtists.getOrDefault(artist, 0);
+        this.mostListenedArtists.put(artist, currentCount + 1);
+    }
+
+    public void addListenedGenre(String genre) {
+        Integer currentCount = this.mostListenedGenres.getOrDefault(genre, 0);
+        this.mostListenedGenres.put(genre, currentCount + 1);
+    }
+
+    public void orderByNumOfListen() {
+        LinkedHashMap<String, Integer> sortedMap = listenedSongs.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        listenedSongs.clear();
+        listenedSongs.putAll(sortedMap);
+
+        sortedMap.clear();
+        sortedMap = mostListenedArtists.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        mostListenedArtists.clear();
+        mostListenedArtists.putAll(sortedMap);
+
+        sortedMap.clear();
+        sortedMap = mostListenedGenres.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        mostListenedGenres.clear();
+        mostListenedGenres.putAll(sortedMap);
+
+        sortedMap.clear();
+        sortedMap = listenedAlbums.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        listenedAlbums.clear();
+        listenedAlbums.putAll(sortedMap);
+
+        sortedMap.clear();
+        sortedMap = fans.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        fans.clear();
+        fans.putAll(sortedMap);
+    }
+
+    public void mostProfitableSongForArtist(String Username) {
+        int numOfListenings, songTotal = 0;
+        double songRevenue, songRevenueForASong;
+        for (User user: Admin.getInstance().getUsers()) {
+            songTotal = 0;
+            numOfListenings = 0;
+            if (user.isPremium()) {
+                for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
+                    if (entry.getKey().equals(username)) {
+                        numOfListenings = entry.getValue();
+                        break;
+                    }
+                }
+                for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
+                    songTotal += entry.getValue();
+                }
+                for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
+                    songRevenue = Admin.getInstance().getUser(entry.getKey()).getSongRevenue();
+                    songRevenue = songRevenue + (double) (1000000 * entry.getValue()) / songTotal;
+                    songRevenue = Math.round(songRevenue * 100.0) / 100.0;
+                    User artist =  Admin.getInstance().getUser(entry.getKey());
+                    artist.setSongRevenue(songRevenue);
+                }
+                User artist = Admin.getInstance().getUser(username);
+                if (numOfListenings != 0)
+                    songRevenueForASong = artist.getSongRevenue() / numOfListenings;
+            }
+        }
+    }
+
     /**
      * Simulates the passage of time in the player by advancing the playback position.
      * Invokes the player's simulatePlayer method with the provided time.
      *
      * @param time The simulated time in milliseconds to advance the player's
      *             playback position.
-     * @see Player#simulatePlayer(int)
+     * @see Player#simulatePlayer(int, User)
      */
     public void simulateTime(final int time) {
-        player.simulatePlayer(time);
+        player.simulatePlayer(time, this);
     }
 }

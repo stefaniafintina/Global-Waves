@@ -5,11 +5,11 @@ import app.player.PlayerStats;
 import app.searchBar.Filters;
 import app.user.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.input.CommandInput;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * The type Command runner.
@@ -690,5 +690,96 @@ public final class CommandRunner {
         objectNode.put("timestamp", commandInput.getTimestamp());
         objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().getTop5Artists()));
         return objectNode;
+    }
+    public static ObjectNode wrapped(final CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+        if (user.getListenedSongs().isEmpty() && user.getListenedAlbums().isEmpty() &&
+                user.getMostListenedGenres().isEmpty() && user.getMostListenedArtists().isEmpty() &&
+                user.getListenedEpisodes().isEmpty()) {
+            if(user.isArtist())
+                objectNode.put("message", "No data to show for artist " + user.getName() + ".");
+            else
+                objectNode.put("message", "No data to show for user " + user.getName() + ".");
+            return objectNode;
+        }
+        if (!Admin.getInstance().checkIfHost(commandInput.getUsername()) && !Admin.getInstance().checkIfArtist(commandInput.getUsername())) {
+            objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().
+                    wrappedUser(commandInput.getUsername())));
+        }
+        if (Admin.getInstance().checkIfArtist(commandInput.getUsername())) {
+            objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().
+                    wrappedArtist(commandInput.getUsername())));
+        }
+        return objectNode;
+    }
+
+    public static ObjectNode buyPremium(final CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.getInstance().getPremiumSubscription(commandInput.getUsername()));
+        return objectNode;
+    }
+
+    public static ObjectNode cancelPremium(final CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.getInstance().cancelSubscription(commandInput.getUsername()));
+        return objectNode;
+    }
+    public static ObjectNode endProgram() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode root = objectMapper.createObjectNode();
+//        for (User user: Admin.getInstance().getUsers()) {
+//            if (user.isPremium()) {
+//                int songTotal = 0;
+//                for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
+//                    songTotal += entry.getValue();
+//                }
+//                for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
+//                    double songRevenue = Objects.requireNonNull(Admin.getInstance().getUser(entry.getKey())).getSongRevenue();
+//                    songRevenue = songRevenue + (double) (1000000 * entry.getValue()) / songTotal;
+//                    songRevenue = Math.round(songRevenue * 100.0) / 100.0;
+//                    User artist =  Admin.getInstance().getUser(entry.getKey());
+//                    artist.setSongRevenue(songRevenue);
+//                }
+//            }
+//        }
+        ObjectNode resultNode = objectMapper.createObjectNode();
+
+        List<User> artists = new ArrayList<>(Admin.getInstance().getArtists());
+
+        artists.sort(Comparator.comparing(User::getName));
+        int index = 0;
+        for (User artist : artists) {
+            if (!artist.getFans().isEmpty()) {
+                index++;
+                ObjectNode artistNode = objectMapper.createObjectNode();
+                artistNode.put("merchRevenue", 0.0);
+                artistNode.put("songRevenue", artist.getSongRevenue());
+                artistNode.put("ranking", index);
+                if (artist.getListenedSongs().isEmpty())
+                    artistNode.put("mostProfitableSong", "N/A");
+                else {
+//                    for (Map.Entry<String, Integer> entry : artist.getListenedSongs().entrySet()) {
+//                        artistNode.put("mostProfitableSong", entry.getKey());
+//                        break;
+//                    }
+                    artistNode.put("mostProfitableSong", "N/A");
+                }
+                resultNode.set(artist.getName(), artistNode);
+            }
+        }
+
+        root.put("command", "endProgram");
+        root.set("result", resultNode);
+        return root;
     }
 }
