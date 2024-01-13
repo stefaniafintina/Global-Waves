@@ -2,6 +2,7 @@ package main;
 
 import app.Admin;
 import app.CommandRunner;
+import app.user.User;
 import checker.Checker;
 import checker.CheckerConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Objects;
 
 /**
@@ -36,6 +38,7 @@ public final class Main {
      * @throws IOException in case of exceptions to reading / writing
      */
     public static void main(final String[] args) throws IOException {
+        int i = 0;
         File directory = new File(CheckerConstants.TESTS_PATH);
         Path path = Paths.get(CheckerConstants.RESULT_PATH);
         File[] inputDir = directory.listFiles();
@@ -52,12 +55,15 @@ public final class Main {
             if (file.getName().startsWith("library")) {
                 continue;
             }
-
+            i++;
             String filepath = CheckerConstants.OUT_PATH + file.getName();
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {
                 action(file.getName(), filepath);
+            }
+            if (i == 5) {
+                break;
             }
         }
 
@@ -71,7 +77,7 @@ public final class Main {
      */
     public static void action(final String filePath1,
                               final String filePath2) throws IOException {
-
+        System.out.println(filePath1);
         ObjectMapper objectMapper = new ObjectMapper();
         LibraryInput library = objectMapper.readValue(new File(CheckerConstants.TESTS_PATH
                 + "library/library.json"), LibraryInput.class);
@@ -79,14 +85,21 @@ public final class Main {
                 + filePath1), CommandInput[].class);
         ArrayNode outputs = objectMapper.createArrayNode();
 
-        Admin.setUsers(library.getUsers());
-        Admin.setArtists(new ArrayList<>());
-        Admin.setHosts(new ArrayList<>());
-        Admin.setSongs(library.getSongs());
-        Admin.setPodcasts(library.getPodcasts());
-
+        Admin.getInstance().setUsers(library.getUsers());
+        Admin.getInstance().setArtists(new ArrayList<>());
+        Admin.getInstance().setHosts(new ArrayList<>());
+        Admin.getInstance().setSongs(library.getSongs());
+        Admin.getInstance().setPodcasts(library.getPodcasts());
+        for (String user: Admin.getInstance().getAllUsers())
+            if (Admin.getInstance().getUser(user) != null) {
+                Admin.getInstance().getUser(user).setListenedSongs(new LinkedHashMap<>());
+                Admin.getInstance().getUser(user).setListenedAlbums(new LinkedHashMap<>());
+                Admin.getInstance().getUser(user).setListenedEpisodes(new LinkedHashMap<>());
+                Admin.getInstance().getUser(user).setMostListenedArtists(new LinkedHashMap<>());
+                Admin.getInstance().getUser(user).setMostListenedGenres(new LinkedHashMap<>());
+            }
         for (CommandInput command : commands) {
-            Admin.updateTimestamp(command.getTimestamp(), command.getUsername());
+            Admin.getInstance().updateTimestamp(command.getTimestamp(), command.getUsername());
 
             String commandName = command.getCommand();
 
@@ -134,13 +147,17 @@ public final class Main {
                 case "changePage" -> outputs.add(CommandRunner.changePage(command));
                 case "getTop5Albums" -> outputs.add(CommandRunner.getTop5Albums(command));
                 case "getTop5Artists" -> outputs.add(CommandRunner.getTop5Artists(command));
+                case "wrapped" ->outputs.add(CommandRunner.wrapped(command));
+                case "buyPremium" ->outputs.add(CommandRunner.buyPremium(command));
+                case "cancelPremium" ->outputs.add(CommandRunner.cancelPremium(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }
 
+        outputs.add(CommandRunner.endProgram());
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
         objectWriter.writeValue(new File(filePath2), outputs);
 
-        Admin.reset();
+        Admin.getInstance().reset();
     }
 }

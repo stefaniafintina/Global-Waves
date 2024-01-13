@@ -72,7 +72,7 @@ public final class SearchBar {
         searchType = 0;
         switch (type) {
             case "song":
-                entries = new ArrayList<>(Admin.getSongs());
+                entries = new ArrayList<>(Admin.getInstance().getSongs());
 
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
@@ -104,7 +104,7 @@ public final class SearchBar {
 
                 break;
             case "playlist":
-                entries = new ArrayList<>(Admin.getPlaylists());
+                entries = new ArrayList<>(Admin.getInstance().getPlaylists());
 
                 entries = filterByPlaylistVisibility(entries, user);
 
@@ -122,7 +122,7 @@ public final class SearchBar {
 
                 break;
             case "podcast":
-                entries = new ArrayList<>(Admin.getPodcasts());
+                entries = new ArrayList<>(Admin.getInstance().getPodcasts());
 
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
@@ -136,13 +136,13 @@ public final class SearchBar {
 
             case "artist":
                 searchType = 1;
-                entries = new ArrayList<>(Admin.getArtists());
+                entries = new ArrayList<>(Admin.getInstance().getArtists());
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
                 }
                 break;
             case "album":
-                entries = new ArrayList<>(Admin.getAlbums());
+                entries = new ArrayList<>(Admin.getInstance().getAlbums());
 
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
@@ -159,7 +159,7 @@ public final class SearchBar {
 
             case "host":
                 searchType = 1;
-                entries = new ArrayList<>(Admin.getHosts());
+                entries = new ArrayList<>(Admin.getInstance().getHosts());
                 if (filters.getName() != null) {
                     entries = filterByName(entries, filters.getName());
                 }

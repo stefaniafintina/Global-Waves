@@ -1,20 +1,31 @@
-# Proiect GlobalWaves  - Etapa 2
+# Project GlobalWaves  - Stage 2
 
-<div align="center"><img src="https://tenor.com/view/listening-to-music-spongebob-gif-8009182.gif" width="300px"></div>
+  The second part of the project comes with new features such as: `artists` and `hosts`(privileged users, because they can `add` and `delete` posts/items from their page: `merch`, `events` and `announcements`), adding the concept of pages: `HomePage`(prints the likedSongs and followedPlaylists for the current user), `ArtistPage`(prints the lists of the specific items that belongs only to them), `HostPage`(prints the lists of the specific items that belongs only to them), `LikedContent Page`(prints the likedSongs and followedPlaylists for the current user and the artist's name).
+  
+  * When an ordinary user searches for an artist or host and clicks on a search result, their current page `switches` to the one selected by the special user.
+  * This stage also features a page system that adheres to the principles of `Spotify`.
 
-#### Assignment Link: [https://ocw.cs.pub.ro/courses/poo-ca-cd/teme/proiect/etapa1](https://ocw.cs.pub.ro/courses/poo-ca-cd/teme/proiect/etapa1)
+  Moreover, a user can be `added` or `deleted`. The deletion can be made only in some situations:
+  * if `none` of the user's audio Collections are played on the deletion timestamp
+  * if `none` of the users are on user's page 
 
+In case of success, the deletion must be made in the `global database` (the place where the information is public for all users). All the user's `songs`, `podcasts` and `playlist` will be `deleted` for all other users.
+  
+Also, a new audio file was added: `ALBUM`. It functions similarly to a playlist but has specific distinctions (`announcements`).
 
-## Skel Structure
+Moreover, in this stage of project we have more control over the audio collections, because we can add and delete them, of course, if they follow some `rules`:
+* <ul><i>For adding</i>
+* check if user exists
+* check if user has another album with the same name
+* check if the album has at `least 2 songs` with the same name
+</ul>
 
-* src/
-  * checker/ - checker files
-  * fileio/ - contains classes used to read data from the json files
-  * main/
-      * Main - the Main class runs the checker on your implementation. Add the entry point to your implementation in it. Run Main to test your implementation from the IDE or from command line.
-      * Test - run the main method from Test class with the name of the input file from the command line and the result will be written
-        to the out.txt file. Thus, you can compare this result with ref.
-* input/ - contains the tests and library in JSON format
-* ref/ - contains all reference output for the tests in JSON format
+* <ul><i>For deletion</i>
 
-<div align="center"><img src="https://tenor.com/view/homework-time-gif-24854817.gif" width="500px"></div>
+* check if current album is not on play
+* check if a song from current album is not on play
+* check if other user is on album's owner's page
+</ul>
+
+The same occurs for `removePodcast`, `removeAnnouncement`, `removeEvent`.
+

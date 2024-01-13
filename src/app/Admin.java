@@ -12,6 +12,7 @@ import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.artistsPage.Event;
 import app.hostsPage.Announcement;
+import app.player.Player;
 import app.user.User;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,11 +23,7 @@ import fileio.input.PodcastInput;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static app.CommandRunner.objectMapper;
 
@@ -48,21 +45,28 @@ public final class Admin {
     public static final int MAGIC_NUMBER10 = 10;
     public static final int MAGIC_NUMBER100 = 100;
     public static final int MAGIC_NUMBER1000 = 1000;
-
-    private static List<User> users = new ArrayList<>();
-    private static List<Song> songs = new ArrayList<>();
-    private static List<Podcast> podcasts = new ArrayList<>();
+    @Getter
+    private List<User> users = new ArrayList<>();
+    private List<Song> songs = new ArrayList<>();
+    private List<Podcast> podcasts = new ArrayList<>();
     @Getter
     @Setter
-    private static List<User> artists = new ArrayList<>();
+    private List<User> artists = new ArrayList<>();
     @Getter
     @Setter
-    private static List<Album> allAlbums = new ArrayList<>();
+    private List<Album> allAlbums = new ArrayList<>();
     @Getter
     @Setter
-    private static List<User> hosts = new ArrayList<>();
-    private static int timestamp = 0;
-    private static boolean connectionStatus = true;
+    private List<User> hosts = new ArrayList<>();
+    private int timestamp = 0;
+    private static Admin instance = null;
+    private boolean connectionStatus = true;
+    public static Admin getInstance() {
+        if (instance == null) {
+            instance = new Admin();
+        }
+        return  instance;
+    }
     private Admin() {
     }
     /**
@@ -73,7 +77,7 @@ public final class Admin {
      * @param userInputList The list of UserInput instances containing user information.
      * @throws NullPointerException If the provided userInputList is null.
      */
-    public static void setUsers(final List<UserInput> userInputList) {
+    public void setUsers(final List<UserInput> userInputList) {
         users = new ArrayList<>();
         for (UserInput userInput : userInputList) {
             users.add(new User(userInput.getUsername(), userInput.getAge(), userInput.getCity()));
@@ -88,7 +92,7 @@ public final class Admin {
      * @param songInputList The list of SongInput instances containing song information.
      * @throws NullPointerException If the provided songInputList is null.
      */
-    public static void setSongs(final List<SongInput> songInputList) {
+    public void setSongs(final List<SongInput> songInputList) {
         songs = new ArrayList<>();
         for (SongInput songInput : songInputList) {
             songs.add(new Song(songInput.getName(), songInput.getDuration(), songInput.getAlbum(),
@@ -104,7 +108,7 @@ public final class Admin {
      * @param podcastInputList The list of PodcastInput instances containing podcast information.
      * @throws NullPointerException If the provided podcastInputList is null.
      */
-    public static void setPodcasts(final List<PodcastInput> podcastInputList) {
+    public void setPodcasts(final List<PodcastInput> podcastInputList) {
         podcasts = new ArrayList<>();
         for (PodcastInput podcastInput : podcastInputList) {
             List<Episode> episodes = new ArrayList<>();
@@ -117,17 +121,17 @@ public final class Admin {
     }
     /**
      */
-    public static List<Song> getSongs() {
+    public List<Song> getSongs() {
         return new ArrayList<>(songs);
     }
     /**
      */
-    public static List<Podcast> getPodcasts() {
+    public List<Podcast> getPodcasts() {
         return new ArrayList<>(podcasts);
     }
     /**
      */
-    public static List<Playlist> getPlaylists() {
+    public List<Playlist> getPlaylists() {
         List<Playlist> playlists = new ArrayList<>();
         for (User user : users) {
             playlists.addAll(user.getPlaylists());
@@ -136,7 +140,7 @@ public final class Admin {
     }
     /**
      */
-    public static List<Album> getAlbums() {
+    public List<Album> getAlbums() {
         List<Album> albums = new ArrayList<>();
         for (User user : users) {
             if (user.getAlbums() != null) {
@@ -147,7 +151,7 @@ public final class Admin {
     }
     /**
      */
-    public static User getUser(final String username) {
+    public User getUser(final String username) {
         for (User user : users) {
             if (user.getUsername().equals(username)) {
                 return user;
@@ -159,7 +163,7 @@ public final class Admin {
      * The newly-added feature is updating the remained time
      * only if the user is online
      */
-    public static void updateTimestamp(final int newTimestamp, final String username) {
+    public void updateTimestamp(final int newTimestamp, final String username) {
 
         int elapsed = newTimestamp - timestamp;
         timestamp = newTimestamp;
@@ -177,7 +181,7 @@ public final class Admin {
      *
      * @return the top 5 songs
      */
-    public static List<String> getTop5Songs() {
+    public List<String> getTop5Songs() {
 
         List<Song> sortedSongs = new ArrayList<>(getSongs());
         sortedSongs.sort(Comparator.comparingInt(Song::getLikes).reversed().
@@ -199,7 +203,7 @@ public final class Admin {
      *
      * @return the top 5 playlists
      */
-    public static List<String> getTop5Playlists() {
+    public List<String> getTop5Playlists() {
         List<Playlist> sortedPlaylists = new ArrayList<>(getPlaylists());
         sortedPlaylists.sort(Comparator.comparingInt(Playlist::getFollowers)
                 .reversed()
@@ -220,7 +224,7 @@ public final class Admin {
      * the album with the most liked, based on the number of likes of each song
      * if number of likes of 2 different albums leads to comparing their names
      */
-    public static  ArrayList<String> getTop5Albums() {
+    public ArrayList<String> getTop5Albums() {
         ArrayList<Album> albumLikes = new ArrayList<>();
 
         for (User user: users) {
@@ -256,7 +260,7 @@ public final class Admin {
      * and value their number of likes
      * @return An ArrayList containing the names of the top 5 artists.
      */
-    public static  ArrayList<String> getTop5Artists() {
+    public ArrayList<String> getTop5Artists() {
         HashMap<String, Integer> mostLikedArtists = new HashMap<>();
         for (User user: users) {
             int likeCounter = 0;
@@ -290,7 +294,7 @@ public final class Admin {
      * @return The User object if a user with the specified username is found,
      * otherwise returns null.
      */
-    public static User checkIfUserExists(final String username) {
+    public User checkIfUserExists(final String username) {
         for (User user: users) {
             if (user.getUsername().equals(username)) {
                 return user;
@@ -302,7 +306,7 @@ public final class Admin {
      * this method check if the user is online or offline and updates their
      * status to offline or online(respectively) and return the new status
      */
-    public static boolean switchConnectionStatus(final String username) {
+    public boolean switchConnectionStatus(final String username) {
         for (User user: users) {
             if (user.getUsername().equals(username)) {
                 if (user.isConnectionStatus()) {
@@ -324,7 +328,7 @@ public final class Admin {
      *
      * @return A List of usernames for online users excluding hosts and artists.
      */
-    public static List<String> getOnlineUsers() {
+    public List<String> getOnlineUsers() {
         List<String> onlineUsers = new ArrayList<>();
         for (User user: users) {
             if (user.isConnectionStatus()) {
@@ -338,7 +342,7 @@ public final class Admin {
     /**
      * check if a user is online and return it
      */
-    public static int isOnline(final String username) {
+    public int isOnline(final String username) {
         for (User user: users) {
             if (user.getUsername().equals(username)) {
                 if (user.isConnectionStatus()) {
@@ -352,7 +356,7 @@ public final class Admin {
     /**
      * check if user's type is host
      */
-    public static boolean checkIfHost(final String username) {
+    public boolean checkIfHost(final String username) {
         for (User user: users) {
             if (user.getUsername().equals(username)) {
                 return user.isHost();
@@ -363,7 +367,7 @@ public final class Admin {
     /**
      * check if user's type is artist
      */
-    public static boolean checkIfArtist(final String username) {
+    public boolean checkIfArtist(final String username) {
         for (User user: users) {
             if (user.getUsername().equals(username)) {
                 return user.isArtist();
@@ -375,7 +379,7 @@ public final class Admin {
      * if the current user doesn't exist in current database, it can successfully be added
      * artists list is updated if the current user is an artist, and the same for host
      */
-    public static void addUser(final User user) {
+    public void addUser(final User user) {
         if (checkIfUserExists(user.getUsername()) == null) {
             users.add(user);
             user.setPage(new HomePage(user));
@@ -401,7 +405,7 @@ public final class Admin {
      *         Returns success message if the album is added successfully, or an error
      *         message otherwise.
      */
-    public static String addAlbum(final String username, final String name,
+    public String addAlbum(final String username, final String name,
                                   final ArrayList<SongInput> songsList, final Integer releaseYear,
                                   final String description) {
         HashMap<String, Integer> numberOfAppearance = new HashMap<>();
@@ -428,19 +432,17 @@ public final class Admin {
                 // Create and add the new album to the user's profile
                 Album album = new Album(name, username, releaseYear, description);
                 for (SongInput song: songsList) {
-                    album.addSong(new Song(song.getName(), song.getDuration(), song.getAlbum(),
+                    Song newSong = new Song(song.getName(), song.getDuration(), song.getAlbum(),
                             song.getTags(), song.getLyrics(), song.getGenre(),
-                            song.getReleaseYear(), song.getArtist()));
+                            song.getReleaseYear(), song.getArtist());
+                    album.addSong(newSong);
+                    if (!songs.contains(newSong)) {
+                        songs.add(newSong);
+                    }
                 }
                 myUser.addAlbum(album);
                 // Add new songs to the global songs list if they don't already exist
-                for (SongInput song: songsList) {
-                    if (!songs.contains(song)) {
-                        songs.add(new Song(song.getName(), song.getDuration(), song.getAlbum(),
-                                song.getTags(), song.getLyrics(), song.getGenre(),
-                                song.getReleaseYear(), song.getArtist()));
-                    }
-                }
+
                 return myUser.getUsername() + " has added new album successfully.";
             }
         }
@@ -454,7 +456,7 @@ public final class Admin {
      * the album we want to delete)
      * ->if a song from this album  is now on play or the album itself it s on play
      */
-    public static String removeAlbum(final String username, final String name) {
+    public String removeAlbum(final String username, final String name) {
         boolean existentAlbum = false;
         if (checkIfUserExists(username) == null) {
             return "The username " + username + " doesn't exist.";
@@ -514,7 +516,7 @@ public final class Admin {
      * @return An ArrayNode containing information about the albums, or null if the
      * username is not found.
      */
-    public static ArrayNode showAlbums(final String username) {
+    public ArrayNode showAlbums(final String username) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         for (User user: users) {
             if (user.getUsername().equals(username)) {
@@ -537,7 +539,7 @@ public final class Admin {
     /**
      * verifies the date
      */
-    public static int validDate(final String date) {
+    public int validDate(final String date) {
         if (date.charAt(MAGIC_NUMBER3) == '0' && date.charAt(MAGIC_NUMBER4) == '2') {
             if ((date.charAt(0) == MAGIC_NUMBER2 && date.charAt(MAGIC_NUMBER1) >= '9')
                     || (date.charAt(MAGIC_NUMBER0) >= '3')) {
@@ -575,7 +577,7 @@ public final class Admin {
      *         Returns success message if the event is added successfully, or
      *         an error message otherwise.
      */
-    public static String addEvent(final String username, final String name, final String date,
+    public String addEvent(final String username, final String name, final String date,
                                   final String description) {
         Event myEvent = new Event(date, description, name);
         for (User user: users) {
@@ -606,7 +608,7 @@ public final class Admin {
      *         Returns success message if the event is removed successfully,
      *         or an error message otherwise.
      */
-    public static String removeEvent(final String username, final String name) {
+    public String removeEvent(final String username, final String name) {
         if (checkIfUserExists(username) == null) {
             return username + " doesn't exist.";
         }
@@ -635,7 +637,7 @@ public final class Admin {
      *         Returns success message if the merchandise is added successfully, or an
      *         error message otherwise.
      */
-    public static String addMerch(final String username, final String name,
+    public String addMerch(final String username, final String name,
                                   final double price, final String description) {
         Merch myMerch = new Merch(price, description, name);
         for (User user: users) {
@@ -664,7 +666,7 @@ public final class Admin {
      * in case of success all information about the user should be
      * deleted from the global database
      */
-    public static String deleteUser(final String username) {
+    public String deleteUser(final String username) {
         for (User user:  users) {
             if (user.getName().equals(username)) {
                 for (User user1 : users) {
@@ -793,7 +795,7 @@ public final class Admin {
      *
      * @return An ArrayList of usernames, including regular users, artists, and hosts.
      */
-    public static ArrayList<String> getAllUsers() {
+    public ArrayList<String> getAllUsers() {
         ArrayList<String> allUsers = new ArrayList<>();
         for (User user: users) {
             if (!user.isArtist() && !user.isHost()) {
@@ -825,7 +827,7 @@ public final class Admin {
      *         Returns success message if the podcast is added successfully, or an error message
      *         otherwise.
      */
-    public static String addPodcast(final String username, final ArrayList<EpisodeInput>
+    public String addPodcast(final String username, final ArrayList<EpisodeInput>
             episodesList, final String name) {
         if (checkIfUserExists(username) == null) {
             return username + " doesn't exist.";
@@ -876,7 +878,7 @@ public final class Admin {
      *         Returns success message if the podcast is removed successfully,
      *         or an error message otherwise.
      */
-    public static String removePodcast(final String username, final String name) {
+    public String removePodcast(final String username, final String name) {
         if (checkIfUserExists(username) == null) {
             return username + " doesn't exist.";
         }
@@ -927,7 +929,7 @@ public final class Admin {
      *         Returns success message if the announcement is added successfully, or
      *         an error message otherwise.
      */
-    public static String addAnnouncement(final String username, final String name,
+    public String addAnnouncement(final String username, final String name,
                                          final String description) {
         Announcement myAnnouncement = new Announcement(name, description);
         if (checkIfUserExists(username) == null) {
@@ -954,7 +956,7 @@ public final class Admin {
      * @return An ArrayNode containing a JSON representation of the user's podcasts and episodes.
      *         Returns null if the user does not exist or has no podcasts.
      */
-    public static ArrayNode showPodcasts(final String username) {
+    public ArrayNode showPodcasts(final String username) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         for (User user: users) {
             if (user.getUsername().equals(username)) {
@@ -986,7 +988,7 @@ public final class Admin {
      *         or an error message if the user doesn't exist, is not a host, or has
      *         no such announcement.
      */
-    public static String removeAnnouncement(final String username, final String name) {
+    public String removeAnnouncement(final String username, final String name) {
         if (checkIfUserExists(username) == null) {
             return username + " doesn't exist.";
         }
@@ -1014,7 +1016,7 @@ public final class Admin {
      *         Returns a success message if the page is changed successfully,
      *         or an error message if the specified page is non-existent.
      */
-    public static String changePage(final String username, final String nextPage) {
+    public String changePage(final String username, final String nextPage) {
         if (nextPage.equals("HomePage") || nextPage.equals("Home")) {
             getUser(username).setPage(new HomePage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
@@ -1033,10 +1035,143 @@ public final class Admin {
         }
         return username + " is trying to access a non-existent page.";
     }
+
+
+    public ObjectNode wrappedUser(String username) {
+
+        User user = getUser(username);
+        if (user != null) {
+            user.orderByNumOfListen();
+            ObjectNode objectNode = objectMapper.createObjectNode();
+
+            ObjectNode objectNodeResult = objectMapper.createObjectNode();
+
+            int cnt = 0;
+            ObjectNode objectNodeS = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeS.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeA = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeA.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeG = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getMostListenedGenres().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeG.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeAlb = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedAlbums().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeAlb.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeEp = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedEpisodes().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeEp.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            objectNodeResult.set("topArtists",objectNodeA);
+            objectNodeResult.set("topGenres",objectNodeG);
+            objectNodeResult.set("topSongs", objectNodeS);
+            objectNodeResult.set("topAlbums", objectNodeAlb);
+            objectNodeResult.set("topEpisodes",objectNodeEp);
+            return objectNodeResult;
+        }
+        return null;
+    }
+
+    public ObjectNode wrappedArtist(String username) {
+        User user = getUser(username);
+        if (user != null) {
+            user.orderByNumOfListen();
+            ObjectNode objectNodeResult = objectMapper.createObjectNode();
+
+            int cnt = 0;
+            ObjectNode objectNodeS = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeS.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeAlb = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedAlbums().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeAlb.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ArrayNode objectNodeFans = objectMapper.createArrayNode();
+            for (Map.Entry<String, Integer> entry : user.getFans().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeFans.add(entry.getKey());
+                }
+                cnt++;
+            }
+
+            objectNodeResult.set("topAlbums", objectNodeAlb);
+            objectNodeResult.set("topSongs", objectNodeS);
+            objectNodeResult.set("topFans", objectNodeFans);
+            objectNodeResult.put("listeners", user.getFans().size());
+            return objectNodeResult;
+        }
+        return null;
+    }
+
+    public String getPremiumSubscription(final String username) {
+        User user = getUser(username);
+        if (user != null) {
+            if (user.isPremium()) {
+                return username + " is already a premium user.";
+            } else {
+                user.setPremium(true);
+                return username + " bought the subscription successfully.";
+            }
+        }
+        return "The username " + username + " doesn't exist.";
+    }
+
+    public String cancelSubscription(final String username) {
+        User user = getUser(username);
+        if (user != null) {
+            if (user.isPremium()) {
+                user.setPremium(false);
+                return username + " cancelled the subscription successfully.";
+            } else {
+                return username + " is not a premium user.";
+            }
+        }
+        return "The username " + username + " doesn't exist.";
+    }
     /**
      * reset
      */
-    public static void reset() {
+    public void reset() {
         connectionStatus = true;
         users = new ArrayList<>();
         songs = new ArrayList<>();
