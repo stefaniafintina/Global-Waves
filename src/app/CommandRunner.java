@@ -737,42 +737,51 @@ public final class CommandRunner {
     public static ObjectNode endProgram() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode root = objectMapper.createObjectNode();
-//        for (User user: Admin.getInstance().getUsers()) {
-//            if (user.isPremium()) {
-//                int songTotal = 0;
-//                for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
-//                    songTotal += entry.getValue();
-//                }
-//                for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
-//                    double songRevenue = Objects.requireNonNull(Admin.getInstance().getUser(entry.getKey())).getSongRevenue();
-//                    songRevenue = songRevenue + (double) (1000000 * entry.getValue()) / songTotal;
-//                    songRevenue = Math.round(songRevenue * 100.0) / 100.0;
-//                    User artist =  Admin.getInstance().getUser(entry.getKey());
-//                    artist.setSongRevenue(songRevenue);
-//                }
-//            }
-//        }
+        for (User user: Admin.getInstance().getUsers()) {
+            if (user.isPremium()) {
+                int songTotal = 0;
+                for (Map.Entry<String, Integer> entry : user.getListenedSongsPremium().entrySet()) {
+                    songTotal += entry.getValue();
+                }
+                for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsPremium().entrySet()) {
+                    User artist =  Admin.getInstance().getUser(entry.getKey());
+                    double songRevenue = artist.getSongRevenue();
+                    songRevenue = songRevenue + (1000000.0 * entry.getValue()) / songTotal;
+                    artist.setSongRevenue(songRevenue);
+                }
+                for (Map.Entry<String, Integer> songEntry : user.getListenedSongsPremium().entrySet()) {
+                    User foundArtist = Admin.getInstance().getArtistBySong(songEntry.getKey());
+                    if (foundArtist != null) {
+                        double revenueForASong = 1000000.0 * songEntry.getValue() / songTotal;
+                        double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                        foundArtist.getMostProfitableSong().put(songEntry.getKey(),
+                                currentCountPremium + revenueForASong);
+                    }
+                }
+            }
+        }
         ObjectNode resultNode = objectMapper.createObjectNode();
 
         List<User> artists = new ArrayList<>(Admin.getInstance().getArtists());
 
-        artists.sort(Comparator.comparing(User::getName));
+        artists.sort(Comparator.comparing(User::getSongRevenue).reversed()
+                .thenComparing(User::getName));
         int index = 0;
         for (User artist : artists) {
+            artist.orderByNumOfListen();
             if (!artist.getFans().isEmpty()) {
                 index++;
                 ObjectNode artistNode = objectMapper.createObjectNode();
                 artistNode.put("merchRevenue", 0.0);
-                artistNode.put("songRevenue", artist.getSongRevenue());
+                artistNode.put("songRevenue", Math.round(artist.getSongRevenue() * 100.0) / 100.0);
                 artistNode.put("ranking", index);
-                if (artist.getListenedSongs().isEmpty())
+                if (artist.getSongRevenue() == 0)
                     artistNode.put("mostProfitableSong", "N/A");
                 else {
-//                    for (Map.Entry<String, Integer> entry : artist.getListenedSongs().entrySet()) {
-//                        artistNode.put("mostProfitableSong", entry.getKey());
-//                        break;
-//                    }
-                    artistNode.put("mostProfitableSong", "N/A");
+                    for (Map.Entry<String, Double> entry : artist.getMostProfitableSong().entrySet()) {
+                        artistNode.put("mostProfitableSong", entry.getKey());
+                        break;
+                    }
                 }
                 resultNode.set(artist.getName(), artistNode);
             }
@@ -781,5 +790,14 @@ public final class CommandRunner {
         root.put("command", "endProgram");
         root.set("result", resultNode);
         return root;
+    }
+
+    public static ObjectNode adBreak(final CommandInput commandInput) {
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.getInstance().adBreak(commandInput.getUsername(), commandInput.getPrice()));
+        return objectNode;
     }
 }

@@ -4,6 +4,7 @@ import app.audio.Collections.AudioCollection;
 import app.audio.Files.AudioFile;
 import app.utils.Enums;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +21,8 @@ public final class PlayerSource {
     @Getter
     private int index;
     private int indexShuffled;
+    @Setter
+    @Getter
     private int remainedDuration;
     private final List<Integer> indices = new ArrayList<>();
 
@@ -210,7 +213,7 @@ public final class PlayerSource {
     /**
      * Updates the current audio file in the player source based on the current index.
      * Retrieves the audio file from the associated audio collection and sets it as the c
-     * urrent audio file.
+     * current audio file.
      */
     public void setAudioFile(final AudioFile audioFile) {
         this.audioFile = audioFile;

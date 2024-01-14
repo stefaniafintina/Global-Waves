@@ -236,7 +236,11 @@ public final class Player {
     public void simulatePlayer(int time, User user) {
         User artist = null;
 
-
+        if (source != null && source.getDuration() > 0) {
+            user.setPlayerType(this.type);
+        } else {
+            user.setPlayerType(null);
+        }
         if (!paused && source != null) {
             int ok = 0;
             while (time >= source.getDuration()) {
@@ -244,13 +248,55 @@ public final class Player {
                 time -= source.getDuration();
                 lastAudioFile = this.getCurrentAudioFile();
                 next();
+
+                if (user.isBreakStatus()) {
+                    int songTotal = 0;
+                    for (Map.Entry<String, Integer> entry : user.getListenedSongsBreak().entrySet()) {
+                        songTotal += entry.getValue();
+                    }
+                    for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsBreak().entrySet()) {
+                        User artistBreak =  Admin.getInstance().getUser(entry.getKey());
+                        double songRevenue = artistBreak.getSongRevenue();
+                        songRevenue = songRevenue + (user.getBreakValue() * entry.getValue()) / songTotal;
+                        if (artistBreak.getName().equals("Stevie Wonder"))
+                            System.out.println(user.getBreakValue() + " " + user.getMostListenedArtistsBreak().get("Stevie Wonder") + " " + songTotal);
+
+                        artistBreak.setSongRevenue(songRevenue);
+                    }
+                    for (Map.Entry<String, Integer> songEntry : user.getListenedSongsBreak().entrySet()) {
+                        User foundArtist = Admin.getInstance().getArtistBySong(songEntry.getKey());
+                        if (foundArtist != null) {
+                            double revenueForASong = user.getBreakValue() * songEntry.getValue() / songTotal;
+                            double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                            foundArtist.getMostProfitableSong().put(songEntry.getKey(),
+                                    currentCountPremium + revenueForASong);
+                        }
+                    }
+                    user.getListenedSongsBreak().clear();
+                    user.getMostListenedArtistsBreak().clear();
+                    user.setBreakStatus(false);
+                }
                 if (this.getCurrentAudioFile() != null && this.type.equals("album")) {
                     Integer currentCount = user.getListenedSongs().getOrDefault(this.getCurrentAudioFile().getName(), 0);
                     Integer currCnt = user.getListenedAlbums().getOrDefault(source.getAudioCollection().getName(), 0);
                     user.getListenedAlbums().put(source.getAudioCollection().getName(), currCnt + 1);
                     user.getListenedSongs().put(this.getCurrentAudioFile().getName(), currentCount + 1);
+                    if (user.isPremium()) {
+                        Integer currentCountPremium = user.getListenedSongsPremium().getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                        user.getListenedSongsPremium().put(this.getCurrentAudioFile().getName(), currentCountPremium + 1);
+                    }
+                    if (!user.isPremium()) {
+                        Integer currentCountBreak = user.getListenedSongsBreak().getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                        user.getListenedSongsBreak().put(this.getCurrentAudioFile().getName(), currentCountBreak + 1);
+                        user.addListenedArtistBreak(((Song)this.getCurrentAudioFile()).getArtist());
+                    }
+
                     user.addListenedGenre(((Song)this.getCurrentAudioFile()).getGenre());
                     user.addListenedArtist(((Song)this.getCurrentAudioFile()).getArtist());
+
+                    if (user.isPremium()) {
+                        user.addListenedArtistPremium(((Song)this.getCurrentAudioFile()).getArtist());
+                    }
                     for (Album album: Admin.getInstance().getAlbums()) {
                         if (album.getName().equals(source.getAudioCollection().getName()) && album.getSongs().contains((Song)this.getCurrentAudioFile())) {
                             artist = Admin.getInstance().getUser(album.getOwner());
@@ -271,8 +317,38 @@ public final class Player {
                     break;
                 }
             }
+
             if (!paused) {
                 source.skip(-time);
+            }
+
+            if (source != null && source.getDuration() < 11 && user.isBreakStatus()) {
+                int songTotal = 0;
+                for (Map.Entry<String, Integer> entry : user.getListenedSongsBreak().entrySet()) {
+                    songTotal += entry.getValue();
+                }
+                for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsBreak().entrySet()) {
+                    User artistBreak =  Admin.getInstance().getUser(entry.getKey());
+                    double songRevenue = artistBreak.getSongRevenue();
+                    if (artistBreak.getName().equals("Stevie Wonder"))
+                        System.out.println(user.getBreakValue() + " " + user.getMostListenedArtistsBreak().get("Stevie Wonder") + " " + songTotal);
+                    songRevenue = songRevenue + (user.getBreakValue() * entry.getValue()) / songTotal;
+
+                    artistBreak.setSongRevenue(songRevenue);
+                }
+                for (Map.Entry<String, Integer> songEntry : user.getListenedSongsBreak().entrySet()) {
+                    User foundArtist = Admin.getInstance().getArtistBySong(songEntry.getKey());
+                    if (foundArtist != null) {
+                        double revenueForASong = user.getBreakValue() * songEntry.getValue() / songTotal;
+                        double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                        foundArtist.getMostProfitableSong().put(songEntry.getKey(),
+                                currentCountPremium + revenueForASong);
+                    }
+                }
+
+                user.getListenedSongsBreak().clear();
+                user.getMostListenedArtistsBreak().clear();
+                user.setBreakStatus(false);
             }
 
         }
