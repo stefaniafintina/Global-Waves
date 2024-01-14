@@ -61,6 +61,7 @@ public final class Admin {
     private int timestamp = 0;
     private static Admin instance = null;
     private boolean connectionStatus = true;
+
     public static Admin getInstance() {
         if (instance == null) {
             instance = new Admin();
@@ -148,6 +149,14 @@ public final class Admin {
             }
         }
         return albums;
+    }
+
+    public User getArtistBySong(String name) {
+        for (Song song: songs) {
+            if (song.getName().equals(name))
+                return getUser(song.getArtist());
+        }
+        return null;
     }
     /**
      */
@@ -1150,6 +1159,8 @@ public final class Admin {
                 return username + " is already a premium user.";
             } else {
                 user.setPremium(true);
+                user.getMostListenedArtistsPremium().clear();
+                user.getListenedSongsPremium().clear();
                 return username + " bought the subscription successfully.";
             }
         }
@@ -1161,6 +1172,26 @@ public final class Admin {
         if (user != null) {
             if (user.isPremium()) {
                 user.setPremium(false);
+                int songTotal = 0;
+                for (Map.Entry<String, Integer> entry : user.getListenedSongsPremium().entrySet()) {
+                    songTotal += entry.getValue();
+                }
+                for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsPremium().entrySet()) {
+                    User artist =  Admin.getInstance().getUser(entry.getKey());
+                    double songRevenue = artist.getSongRevenue();
+                    songRevenue = songRevenue + (1000000.0 * entry.getValue()) / songTotal;
+                    artist.setSongRevenue(songRevenue);
+                }
+                for (Map.Entry<String, Integer> songEntry : user.getListenedSongsPremium().entrySet()) {
+                    User foundArtist = getArtistBySong(songEntry.getKey());
+                    if (foundArtist != null) {
+                        double revenueForASong = 1000000.0 *  songEntry.getValue()/ songTotal;
+                        double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                        foundArtist.getMostProfitableSong().put(songEntry.getKey(),
+                                currentCountPremium + revenueForASong);
+
+                    }
+                }
                 return username + " cancelled the subscription successfully.";
             } else {
                 return username + " is not a premium user.";
@@ -1168,6 +1199,24 @@ public final class Admin {
         }
         return "The username " + username + " doesn't exist.";
     }
+
+    public String adBreak(String username, double value) {
+        User user = getUser(username);
+        if (user ==  null)
+            return "The username " + username + " doesn't exist.";
+        else if (user.getPlayerType().equals("podcast") ||
+                (user.getPlayer().getCurrentAudioFile() == null)) {
+            return username + " is not playing any music.";
+        } else {
+
+            user.setBreakStatus(true);
+            user.getPlayer().getSource().setRemainedDuration(user.getPlayer().getSource().getDuration() + 10);
+            user.setBreakValue(value);
+            return "Ad inserted successfully.";
+        }
+
+    }
+
     /**
      * reset
      */

@@ -2,7 +2,6 @@ package main;
 
 import app.Admin;
 import app.CommandRunner;
-import app.user.User;
 import checker.Checker;
 import checker.CheckerConstants;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Objects;
 
 /**
@@ -62,7 +60,7 @@ public final class Main {
             if (isCreated) {
                 action(file.getName(), filepath);
             }
-            if (i == 5) {
+            if (i == 7) {
                 break;
             }
         }
@@ -90,14 +88,7 @@ public final class Main {
         Admin.getInstance().setHosts(new ArrayList<>());
         Admin.getInstance().setSongs(library.getSongs());
         Admin.getInstance().setPodcasts(library.getPodcasts());
-        for (String user: Admin.getInstance().getAllUsers())
-            if (Admin.getInstance().getUser(user) != null) {
-                Admin.getInstance().getUser(user).setListenedSongs(new LinkedHashMap<>());
-                Admin.getInstance().getUser(user).setListenedAlbums(new LinkedHashMap<>());
-                Admin.getInstance().getUser(user).setListenedEpisodes(new LinkedHashMap<>());
-                Admin.getInstance().getUser(user).setMostListenedArtists(new LinkedHashMap<>());
-                Admin.getInstance().getUser(user).setMostListenedGenres(new LinkedHashMap<>());
-            }
+
         for (CommandInput command : commands) {
             Admin.getInstance().updateTimestamp(command.getTimestamp(), command.getUsername());
 
@@ -150,6 +141,7 @@ public final class Main {
                 case "wrapped" ->outputs.add(CommandRunner.wrapped(command));
                 case "buyPremium" ->outputs.add(CommandRunner.buyPremium(command));
                 case "cancelPremium" ->outputs.add(CommandRunner.cancelPremium(command));
+                case "adBreak" ->outputs.add(CommandRunner.adBreak(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }
