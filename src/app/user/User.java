@@ -1,6 +1,9 @@
 package app.user;
 
+import app.Subject;
+import app.Observer;
 import app.Admin;
+import app.Notifications;
 import app.Pages.ArtistsPage;
 import app.Pages.Page;
 import app.artistsPage.Merch;
@@ -22,14 +25,13 @@ import app.searchBar.SearchBar;
 import app.utils.Enums;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * The type User.
  */
-public final class User extends LibraryEntry {
+public final class User extends LibraryEntry implements Observer, Subject{
     @Getter
     private String username;
     @Getter
@@ -79,7 +81,7 @@ public final class User extends LibraryEntry {
     @Getter
     @Setter
     private boolean isUsed;
-    private String selectedType;
+
     @Getter
     @Setter
     private ArrayList<Podcast> podcasts;
@@ -133,6 +135,21 @@ public final class User extends LibraryEntry {
     @Getter
     @Setter
     private double breakValue;
+    @Getter
+    @Setter
+    private ArrayList<Observer> subscriptions = new ArrayList<>();
+    @Getter
+    @Setter
+    private int subscribers = 0;
+    @Getter
+    @Setter
+    private ArrayList<Notifications> notif;
+    @Getter
+    @Setter
+    private Double merchRevenue;
+    @Getter
+    @Setter
+    private ArrayList<String> myMerches;
 
     /**
      * Instantiates a new User.
@@ -162,7 +179,6 @@ public final class User extends LibraryEntry {
         results = new ArrayList<>();
         artistPage = new ArtistsPage(this);
         isUsed = false;
-        selectedType = null;
         podcasts = new ArrayList<>();
         announcements = new ArrayList<>();
         listenedEpisodes = new LinkedHashMap<>();
@@ -180,6 +196,9 @@ public final class User extends LibraryEntry {
         listenedSongsBreak = new LinkedHashMap<>();
         mostListenedArtistsBreak = new LinkedHashMap<>();
         breakStatus = false;
+        notif = new ArrayList<>();
+        myMerches = new ArrayList<>();
+        merchRevenue = 0.0;
     }
     /**
      * Search array list.
@@ -325,7 +344,6 @@ public final class User extends LibraryEntry {
                 }
             }
         }
-//        System.out.println(" song name "  + player.getCurrentAudioFile().getName() + " lastSelectedName" + searchBar.getLastSelected().getName());
         searchBar.clearSelection();
 
         player.pause();
@@ -528,9 +546,9 @@ public final class User extends LibraryEntry {
                 equals(name))) {
             return "A playlist with the same name already exists.";
     }
-
-        playlists.add(new Playlist(name, username, timestamp));
-
+        Playlist playlist = new Playlist(name, username, timestamp);
+        playlists.add(playlist);
+        playlist.registerObserver(this);
         return "Playlist created successfully.";
     }
     /**
@@ -629,7 +647,8 @@ public final class User extends LibraryEntry {
         followedPlaylists.add(playlist);
         playlist.increaseFollowers();
 
-
+        Notifications notification = new Notifications("New follow", "New follow from " + username + ".");
+        playlist.notifyObservers(notification);
         return "Playlist followed successfully.";
     }
     /**
@@ -688,6 +707,8 @@ public final class User extends LibraryEntry {
         if (albums.contains(album.getName())) {
             return null;
         } else {
+            Notifications notification = new Notifications("New Album", "New Album from " + this.getName() + ".");
+            notifyObservers(notification);
             albums.add(album);
             return album;
         }
@@ -699,6 +720,8 @@ public final class User extends LibraryEntry {
         if (podcasts.contains(podcast.getName())) {
             return null;
         } else {
+            Notifications notification = new Notifications("New Podcast", "New Podcast from " + this.getName() + ".");
+            notifyObservers(notification);
             podcasts.add(podcast);
             return podcast;
         }
@@ -712,6 +735,8 @@ public final class User extends LibraryEntry {
                 return null;
             }
         }
+        Notifications notification = new Notifications("New Event", "New Event from " + this.getName() + ".");
+        notifyObservers(notification);
         events.add(event);
         return event;
     }
@@ -724,6 +749,8 @@ public final class User extends LibraryEntry {
                 return null;
             }
         }
+        Notifications notification = new Notifications("New Merchandise", "New Merchandise from " + this.getName() + ".");
+        notifyObservers(notification);
         merches.add(merch);
         return merch;
     }
@@ -736,6 +763,9 @@ public final class User extends LibraryEntry {
                 return null;
             }
         }
+        Notifications notification = new Notifications("New Announcement",
+                "New Announcement from " + this.getName()  + ".");
+        notifyObservers(notification);
         announcements.add(announcement);
         return announcement;
     }
@@ -944,43 +974,41 @@ public final class User extends LibraryEntry {
         mostProfitableSong.putAll(newSortedMap);
     }
 
-    public String subscribe() {
-        if (!this.connectionStatus) {
-            return this.username + " is offline.";
-        }
-        if (player.getCurrentAudioFile() == null) {
-            return "Please load a source before liking or unliking.";
-        }
-        if (!player.getType().equals("song") && !player.getType().equals("playlist")
-                && !player.getType().equals("album")) {
-            return "Loaded source is not a song.";
+    public String subscribe(String username) {
+        User user = Admin.getInstance().getUser(username);
+        if (user == null)
+            return "The username " + username + "doesn't exist.";
+        if (!user.getPage().getType().equals("artist") && !user.getPage().getType().equals("host")){
+            return "To subscribe you need to be on the page of an artist or host.";
         }
 
-        Song song = (Song) player.getCurrentAudioFile();
+        String ownerName = user.getPage().getOwner().getName();
+        if (Admin.getInstance().getUser(ownerName).getSubscriptions().contains(Admin.getInstance().getUser(username))) {
+            Admin.getInstance().getUser(ownerName).removeObserver(Admin.getInstance().getUser(username));
+            return username + " unsubscribed from " + ownerName + " successfully.";
+        }
+        Admin.getInstance().getUser(ownerName).registerObserver(Admin.getInstance().getUser(username));
 
-        if (likedSongs.contains(song)) {
-            likedSongs.remove(song);
-            song.dislike();
-            for (Song song1: Admin.getInstance().getSongs()) {
-                if (song1.getName().equals(song.getName())) {
-                    if (!song1.getLikes().equals(song.getLikes())) {
-                        song1.setLikes(song.getLikes());
-                    }
-                }
-            }
-            return "Unlike registered successfully.";
-        }
-        likedSongs.add(song);
-        song.like();
-        for (Song song1: Admin.getInstance().getSongs()) {
-            if (song1.getName().equals(song.getName())) {
-                if (!song1.getLikes().equals(song.getLikes())) {
-                    song1.setLikes(song.getLikes());
-                }
-            }
-        }
-        return "Like registered successfully.";
+        return username + " subscribed to " + ownerName + " successfully.";
     }
+
+    public String buyMerch(String username, String merchName) {
+        User user = Admin.getInstance().getUser(username);
+        if (user== null)
+            return "The username " + username + " doesn't exist.";
+        if (!user.getPage().getType().equals("artist"))
+            return "Cannot buy merch from this page.";
+        for (User artist: Admin.getInstance().getArtists()) {
+            for (Merch merch: artist.merches)
+                if (merch.getName().equals(merchName)) {
+                    user.getMyMerches().add(merchName);
+                    artist.setMerchRevenue(artist.getMerchRevenue() + merch.getPrice());
+                    return username + " has added new merch successfully.";
+                }
+        }
+        return "The merch " + merchName + " doesn't exist.";
+    }
+
 
     /**
      * Simulates the passage of time in the player by advancing the playback position.
@@ -992,5 +1020,32 @@ public final class User extends LibraryEntry {
      */
     public void simulateTime(final int time) {
         player.simulatePlayer(time, this);
+    }
+
+    @Override
+    public void receiveUpdate(Notifications notification) {
+        if (!isArtist() && !isHost())
+            notif.add(notification);
+    }
+
+    @Override
+    public void registerObserver(Observer o) {
+        subscriptions.add(o);
+        this.subscribers++;
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+        subscriptions.remove(o);
+        this.subscribers--;
+    }
+
+    @Override
+    public void notifyObservers(Notifications notification) {
+        if (isArtist()) {
+            for (Observer subscription : subscriptions) {
+                subscription.receiveUpdate(notification);
+            }
+        }
     }
 }

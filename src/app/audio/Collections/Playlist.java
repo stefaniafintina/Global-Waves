@@ -1,7 +1,11 @@
 package app.audio.Collections;
 
+import app.Notifications;
+import app.Observer;
+import app.Subject;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Song;
+import app.user.User;
 import app.utils.Enums;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,11 +14,12 @@ import java.util.ArrayList;
 
 @Getter
 @Setter
-public final class Playlist extends AudioCollection {
+public final class Playlist extends AudioCollection implements Subject {
     private final ArrayList<Song> songs;
     private Enums.Visibility visibility;
     private Integer followers;
     private int timestamp;
+    private Observer playlistOwner;
     /**
      */
     public Playlist(final String name, final String owner) {
@@ -101,4 +106,18 @@ public final class Playlist extends AudioCollection {
         }
     }
 
+    @Override
+    public void registerObserver(Observer o) {
+        this.playlistOwner = o;
+    }
+
+    @Override
+    public void removeObserver(Observer o) {
+        this.playlistOwner = null;
+    }
+
+    @Override
+    public void notifyObservers(Notifications notification) {
+        this.playlistOwner.receiveUpdate(notification);
+    }
 }

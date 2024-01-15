@@ -258,8 +258,6 @@ public final class Player {
                         User artistBreak =  Admin.getInstance().getUser(entry.getKey());
                         double songRevenue = artistBreak.getSongRevenue();
                         songRevenue = songRevenue + (user.getBreakValue() * entry.getValue()) / songTotal;
-                        if (artistBreak.getName().equals("Stevie Wonder"))
-                            System.out.println(user.getBreakValue() + " " + user.getMostListenedArtistsBreak().get("Stevie Wonder") + " " + songTotal);
 
                         artistBreak.setSongRevenue(songRevenue);
                     }
@@ -330,8 +328,7 @@ public final class Player {
                 for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsBreak().entrySet()) {
                     User artistBreak =  Admin.getInstance().getUser(entry.getKey());
                     double songRevenue = artistBreak.getSongRevenue();
-                    if (artistBreak.getName().equals("Stevie Wonder"))
-                        System.out.println(user.getBreakValue() + " " + user.getMostListenedArtistsBreak().get("Stevie Wonder") + " " + songTotal);
+
                     songRevenue = songRevenue + (user.getBreakValue() * entry.getValue()) / songTotal;
 
                     artistBreak.setSongRevenue(songRevenue);
