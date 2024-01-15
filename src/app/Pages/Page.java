@@ -8,6 +8,9 @@ public abstract class Page {
     @Getter
     @Setter
     private User owner;
+    @Getter
+    @Setter
+    private String type = "home";
 
     public Page(final User owner) {
         this.owner = owner;

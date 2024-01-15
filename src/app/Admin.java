@@ -395,9 +395,11 @@ public final class Admin {
             if (user.isArtist()) {
                 artists.add(user);
                 user.setPage(new ArtistsPage(user));
+                user.getPage().setType("artist");
             } else if (user.isHost()) {
                 hosts.add(user);
                 user.setPage(new HostsPage(user));
+                user.getPage().setType("host");
             }
         }
     }
@@ -484,10 +486,9 @@ public final class Admin {
         }
         for (User user1 : users) {
             if (!user1.getName().equals(username)) {
-                if (user1.getPage().getOwner().getName().equals(getUser(username).
-                        getPage().getOwner().getName())) {
-                    return username + " can't delete this album.";
-                }
+//                if (user1.getPage().getOwner().getName().equals(username)) {
+//                    return username + " can't delete this album.";
+//                }
                 if (user1.getPlayer().getSource() != null) {
                     if (user1.getPlayer().getSource().getAudioFile().getName().equals(name)) {
                         return username + " can't delete this album.";
@@ -512,7 +513,7 @@ public final class Admin {
                         songs.remove(song);
                     }
                     getUser(username).getAlbums().remove(album);
-                    return username + " has successfully deleted the album.";
+                    return username + " deleted the album successfully.";
                 }
             }
         }
@@ -1027,18 +1028,22 @@ public final class Admin {
      */
     public String changePage(final String username, final String nextPage) {
         if (nextPage.equals("HomePage") || nextPage.equals("Home")) {
+            getUser(username).getPage().setType("home");
             getUser(username).setPage(new HomePage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
         if (nextPage.equals("LikedContent")) {
+            getUser(username).getPage().setType("like");
             getUser(username).setPage(new LikedContentPage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
         if (nextPage.equals("Artist page")) {
+            getUser(username).getPage().setType("artist");
             getUser(username).setPage(new ArtistsPage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
         if (nextPage.equals("Host page")) {
+            getUser(username).getPage().setType("host");
             getUser(username).setPage(new HostsPage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
@@ -1217,6 +1222,19 @@ public final class Admin {
 
     }
 
+    public ArrayNode getNotifications(String username) {
+        User user = getUser(username);
+
+        ArrayNode objectNodeResult = objectMapper.createArrayNode();;
+        for (Notifications notification: user.getNotif()) {
+            ObjectNode notificationNode = objectMapper.createObjectNode();
+            notificationNode.put("name", notification.getName());
+            notificationNode.put("description", notification.getDescription());
+            objectNodeResult.add(notificationNode);
+        }
+        user.getNotif().clear();
+        return objectNodeResult;
+    }
     /**
      * reset
      */

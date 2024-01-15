@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.input.CommandInput;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * The type Command runner.
@@ -734,6 +735,60 @@ public final class CommandRunner {
         objectNode.put("message", Admin.getInstance().cancelSubscription(commandInput.getUsername()));
         return objectNode;
     }
+
+    public static ObjectNode subscribe(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+        String message = user.subscribe(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", message);
+
+        return objectNode;
+    }
+
+    public static ObjectNode getNotifications(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("notifications", objectMapper.valueToTree(Admin.getInstance().getNotifications(commandInput.getUsername())));
+
+        return objectNode;
+    }
+
+    public static ObjectNode buyMerch(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", user.buyMerch(commandInput.getUsername(), commandInput.getName()));
+
+        return objectNode;
+    }
+
+    public static ObjectNode seeMerch(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        ArrayNode merchArrayNode = objectMapper.createArrayNode();
+        for (String merch : user.getMyMerches()) {
+            merchArrayNode.add(merch);
+        }
+
+        objectNode.put("result", merchArrayNode);
+
+        return objectNode;
+    }
     public static ObjectNode endProgram() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode root = objectMapper.createObjectNode();
@@ -764,15 +819,19 @@ public final class CommandRunner {
 
         List<User> artists = new ArrayList<>(Admin.getInstance().getArtists());
 
-        artists.sort(Comparator.comparing(User::getSongRevenue).reversed()
-                .thenComparing(User::getName));
+        List<User> sortedArtists = artists.stream()
+                .sorted(Comparator
+                        .comparing(User::getSongRevenue, Comparator.reverseOrder())
+                        .thenComparing(User::getMerchRevenue, Comparator.reverseOrder())
+                        .thenComparing(User::getName))
+                .collect(Collectors.toList());
         int index = 0;
-        for (User artist : artists) {
+        for (User artist : sortedArtists) {
             artist.orderByNumOfListen();
-            if (!artist.getFans().isEmpty()) {
+            if (!artist.getFans().isEmpty() || artist.getMerchRevenue() > 0.0) {
                 index++;
                 ObjectNode artistNode = objectMapper.createObjectNode();
-                artistNode.put("merchRevenue", 0.0);
+                artistNode.put("merchRevenue", artist.getMerchRevenue());
                 artistNode.put("songRevenue", Math.round(artist.getSongRevenue() * 100.0) / 100.0);
                 artistNode.put("ranking", index);
                 if (artist.getSongRevenue() == 0)
