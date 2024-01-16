@@ -1280,11 +1280,22 @@ public final class Admin {
         return objectNodeResult;
     }
 
-    public String updateRecommendations(String username) {
+    public String updateRecommendations(String username, String tag) {
         User user = getUser(username);
         user.setRecommendation(true);
+        user.updateRecommendations(tag);
         return "The recommendations for user " + username + " have been updated successfully.";
     }
+
+
+    public String getGenreBySongName(String songName) {
+        for (Song song: songs) {
+            if (song.getName().equals(songName))
+                return song.getGenre();
+        }
+        return null;
+    }
+
     /**
      * reset
      */

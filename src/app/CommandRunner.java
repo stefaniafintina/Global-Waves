@@ -828,10 +828,22 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.getInstance().updateRecommendations(commandInput.getUsername()));
+        objectNode.put("message", Admin.getInstance().updateRecommendations(commandInput.getUsername(), commandInput.getRecommendationType()));
 
         return objectNode;
     }
+    public static ObjectNode loadRecommendations(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", "Playback loaded successfully.");
+
+        return objectNode;
+    }
+
     public static ObjectNode endProgram() {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode root = objectMapper.createObjectNode();
