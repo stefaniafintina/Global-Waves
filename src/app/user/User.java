@@ -102,6 +102,15 @@ public final class User extends LibraryEntry implements Observer, Subject{
     private LinkedHashMap<String, Integer> listenedEpisodes;
     @Getter
     @Setter
+    private LinkedHashMap<String, Integer> listenedEpisodesPremium;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedEpisodesBreak;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedPodcasts;
+    @Getter
+    @Setter
     private LinkedHashMap<String, Integer> mostListenedArtists;
     @Getter
     @Setter
@@ -128,6 +137,15 @@ public final class User extends LibraryEntry implements Observer, Subject{
     private LinkedHashMap<String, Integer> mostListenedArtistsBreak;
     @Getter
     @Setter
+    private LinkedHashMap<String, Integer> listenedHostBreak;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedHostPremium;
+    @Getter
+    @Setter
+    private LinkedHashMap<String, Integer> listenedHost;
+    @Getter
+    @Setter
     private LinkedHashMap<String, Integer> listenedSongsBreak;
     @Getter
     @Setter
@@ -150,7 +168,26 @@ public final class User extends LibraryEntry implements Observer, Subject{
     @Getter
     @Setter
     private ArrayList<String> myMerches;
-
+    @Getter
+    @Setter
+    private Deque<Page> pageHistory;
+    @Getter
+    @Setter
+    private boolean recommendation = false;
+    @Getter
+    @Setter
+    private ArrayList<String> songsRecommendation;
+    @Getter
+    @Setter
+    private ArrayList<String> playlistsRecommendation;
+    @Getter
+    @Setter
+    private ArrayList<String> fansRecommendation;
+    @Getter
+    @Setter
+    private String recommendationType;
+    @Getter
+    private LinkedHashMap<String, Integer> topGenre;
     /**
      * Instantiates a new User.
      *
@@ -182,6 +219,7 @@ public final class User extends LibraryEntry implements Observer, Subject{
         podcasts = new ArrayList<>();
         announcements = new ArrayList<>();
         listenedEpisodes = new LinkedHashMap<>();
+        listenedPodcasts = new LinkedHashMap<>();
         listenedSongsPremium = new LinkedHashMap<>();
         listenedSongs = new LinkedHashMap<>();
         mostListenedArtists = new LinkedHashMap<>();
@@ -199,6 +237,16 @@ public final class User extends LibraryEntry implements Observer, Subject{
         notif = new ArrayList<>();
         myMerches = new ArrayList<>();
         merchRevenue = 0.0;
+        listenedEpisodesPremium = new LinkedHashMap<>();
+        listenedEpisodesBreak = new LinkedHashMap<>();
+        listenedHostBreak = new LinkedHashMap<>();
+        listenedHostPremium = new LinkedHashMap<>();
+        listenedHost = new LinkedHashMap<>();
+        pageHistory = new ArrayDeque<>();
+        songsRecommendation = new ArrayList<>();
+        playlistsRecommendation = new ArrayList<>();
+        fansRecommendation = new ArrayList<>();
+        topGenre = new LinkedHashMap<>();
     }
     /**
      * Search array list.
@@ -339,6 +387,30 @@ public final class User extends LibraryEntry implements Observer, Subject{
                         artist.getListenedSongs().put(firstSongInAlbum.getName(), countArtist + 1);
                         artist.getListenedAlbums().put(album.getName(), countArtistsAlbum + 1);
                         artist.getFans().put(this.getName(), fansCount + 1);
+                    }
+                    break;
+                }
+            }
+        } else if (searchBar.getLastSearchType().equals("podcast")) {
+            Episode firstEpisodeInPodcast = ((Podcast) searchBar.getLastSelected()).getEpisodes().get(0);
+            Integer currentCount = this.getListenedEpisodes().getOrDefault(firstEpisodeInPodcast.getName(), 0);
+            Integer currCnt = this.getListenedPodcasts().getOrDefault(((Podcast) searchBar.getLastSelected()).getName(), 0);
+            this.getListenedPodcasts().put(((Podcast) searchBar.getLastSelected()).getName(), currCnt + 1);
+            this.getListenedEpisodes().put(firstEpisodeInPodcast.getName(), currentCount + 1);
+
+            this.addListenedHost(((Podcast) searchBar.getLastSelected()).getOwner());
+
+            for (Podcast podcast: Admin.getInstance().getPodcasts()) {
+                if (podcast.getName().equals(((Podcast) searchBar.getLastSelected()).getName()) && podcast.getEpisodes().contains(firstEpisodeInPodcast)) {
+                    User host = Admin.getInstance().getUser(podcast.getOwner());
+                    if (host != null) {
+                        Integer countArtist = host.getListenedEpisodes().getOrDefault(firstEpisodeInPodcast.getName(), 0);
+                        Integer countArtistsAlbum = host.getListenedPodcasts().getOrDefault(podcast.getName(), 0);
+                        Integer fansCount = host.getFans().getOrDefault(this.getName(), 0);
+
+                        host.getListenedEpisodes().put(firstEpisodeInPodcast.getName(), countArtist + 1);
+                        host.getListenedPodcasts().put(podcast.getName(), countArtistsAlbum + 1);
+                        host.getFans().put(this.getName(), fansCount + 1);
                     }
                     break;
                 }
@@ -878,6 +950,21 @@ public final class User extends LibraryEntry implements Observer, Subject{
         this.mostListenedArtistsBreak.put(artist, currentCount + 1);
     }
 
+    public void addListenedHostBreak(String host) {
+        Integer currentCount = this.listenedHostBreak.getOrDefault(host, 0);
+        this.listenedHostBreak.put(host, currentCount + 1);
+    }
+
+    public void addListenedHost(String host) {
+        Integer currentCount = this.listenedHost.getOrDefault(host, 0);
+        this.listenedHost.put(host, currentCount + 1);
+    }
+
+    public void addListenedHostPremium(String host) {
+        Integer currentCount = this.listenedHostPremium.getOrDefault(host, 0);
+        this.listenedHostPremium.put(host, currentCount + 1);
+    }
+
     public void addListenedGenre(String genre) {
         Integer currentCount = this.mostListenedGenres.getOrDefault(genre, 0);
         this.mostListenedGenres.put(genre, currentCount + 1);
@@ -972,6 +1059,48 @@ public final class User extends LibraryEntry implements Observer, Subject{
 
         mostProfitableSong.clear();
         mostProfitableSong.putAll(newSortedMap);
+
+        sortedMap = listenedPodcasts.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        listenedPodcasts.clear();
+        listenedPodcasts.putAll(sortedMap);
+
+        sortedMap = listenedEpisodes.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        listenedEpisodes.clear();
+        listenedEpisodes.putAll(sortedMap);
+
+        sortedMap = listenedHost.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        listenedHost.clear();
+        listenedHost.putAll(sortedMap);
     }
 
     public String subscribe(String username) {
@@ -1009,7 +1138,86 @@ public final class User extends LibraryEntry implements Observer, Subject{
         return "The merch " + merchName + " doesn't exist.";
     }
 
+    public String nextPage() {
+        if (page == null || pageHistory.isEmpty()) {
+            return "There are no pages left to go forward.";
+        }
+        page = pageHistory.pop();
+        return "The user " + username + " has navigated successfully to the next page.";
+    }
 
+    public String previousPage() {
+        if (pageHistory.size() <= 1) {
+            return "There are no pages left to go backward.";
+        }
+
+        page = pageHistory.pop();
+        Admin.getInstance().changePage(this.getUsername(), page.getType());
+        return "The user " + username + " has navigated successfully to the previous page.";
+    }
+
+    public LinkedHashMap<String, Integer> myTopGenre() {
+        for (Song song: likedSongs) {
+            int genreCount = this.getTopGenre().getOrDefault(song.getGenre(), 0);
+            this.getTopGenre().put(song.getGenre(), genreCount + 1);
+        }
+        for (Playlist playlist: followedPlaylists) {
+            for (Song song: playlist.getSongs()) {
+                int genreCount = this.getTopGenre().getOrDefault(song.getGenre(), 0);
+                this.getTopGenre().put(song.getGenre(), genreCount + 1);
+            }
+        }
+        for (Playlist playlist: playlists) {
+            for (Song song: playlist.getSongs()) {
+                int genreCount = this.getTopGenre().getOrDefault(song.getGenre(), 0);
+                this.getTopGenre().put(song.getGenre(), genreCount + 1);
+            }
+        }
+        LinkedHashMap<String, Integer> sortedMap = topGenre.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder())
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
+        topGenre.clear();
+        topGenre.putAll(sortedMap);
+        return  topGenre;
+    }
+
+    public ArrayList<String> updateRecommendations(String tag) {
+        if (tag.equals("random_song")) {
+            recommendationType = tag;
+            int songTime = 0;
+            for (Song song: Admin.getInstance().getSongs())
+                if (song.getName().equals(player.getCurrentAudioFile().getName()))
+                    songTime = song.getDuration();
+            if (songTime - player.getSource().getDuration() < 30) {
+                songsRecommendation.add(player.getCurrentAudioFile().getName());
+            } else {
+                String currentGenre = Admin.getInstance().getGenreBySongName(player.getCurrentAudioFile().getName());
+
+                ArrayList<Song> songsWithGenre = new ArrayList<>();
+                for (Song song: Admin.getInstance().getSongs())
+                    if (song.getGenre().equals(currentGenre))
+                        songsWithGenre.add(song);
+                Random random = new Random(songTime - player.getSource().getDuration());
+                Song selectedSong = songsWithGenre.get(random.nextInt(songsWithGenre.size()));
+                songsRecommendation.add(selectedSong.getName());
+                return songsRecommendation;
+            }
+        } else if (tag.equals("fans_playlist")) {
+            recommendationType = tag;
+        } else {
+            myTopGenre();
+            playlistsRecommendation.add(this.getName() + "'s recommendations");
+        }
+        return  null;
+    }
     /**
      * Simulates the passage of time in the player by advancing the playback position.
      * Invokes the player's simulatePlayer method with the provided time.

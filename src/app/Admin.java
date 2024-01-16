@@ -1030,21 +1030,25 @@ public final class Admin {
         if (nextPage.equals("HomePage") || nextPage.equals("Home")) {
             getUser(username).getPage().setType("home");
             getUser(username).setPage(new HomePage(getUser(username)));
+            getUser(username).getPageHistory().add(new HomePage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
         if (nextPage.equals("LikedContent")) {
             getUser(username).getPage().setType("like");
             getUser(username).setPage(new LikedContentPage(getUser(username)));
+            getUser(username).getPageHistory().add(new LikedContentPage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
-        if (nextPage.equals("Artist page")) {
+        if (nextPage.equals("Artist page") || nextPage.equals("Artist")) {
             getUser(username).getPage().setType("artist");
             getUser(username).setPage(new ArtistsPage(getUser(username)));
+            getUser(username).getPageHistory().add(new ArtistsPage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
         if (nextPage.equals("Host page")) {
             getUser(username).getPage().setType("host");
             getUser(username).setPage(new HostsPage(getUser(username)));
+            getUser(username).getPageHistory().add(new HostsPage(getUser(username)));
             return username + " accessed " + nextPage + " successfully.";
         }
         return username + " is trying to access a non-existent page.";
@@ -1157,6 +1161,46 @@ public final class Admin {
         return null;
     }
 
+    public ObjectNode wrappedHost(String username) {
+        User user = getUser(username);
+        if (user != null) {
+            user.orderByNumOfListen();
+            ObjectNode objectNodeResult = objectMapper.createObjectNode();
+
+            int cnt = 0;
+            ObjectNode objectNodeS = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedEpisodes().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeS.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ObjectNode objectNodeAlb = objectMapper.createObjectNode();
+            for (Map.Entry<String, Integer> entry : user.getListenedPodcasts().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeAlb.put(entry.getKey(), entry.getValue());
+                }
+                cnt++;
+            }
+
+            cnt = 0;
+            ArrayNode objectNodeFans = objectMapper.createArrayNode();
+            for (Map.Entry<String, Integer> entry : user.getFans().entrySet()) {
+                if (cnt < 5) {
+                    objectNodeFans.add(entry.getKey());
+                }
+                cnt++;
+            }
+
+            objectNodeResult.set("topEpisodes", objectNodeS);
+            objectNodeResult.put("listeners", user.getFans().size());
+            return objectNodeResult;
+        }
+        return null;
+    }
+
     public String getPremiumSubscription(final String username) {
         User user = getUser(username);
         if (user != null) {
@@ -1235,6 +1279,23 @@ public final class Admin {
         user.getNotif().clear();
         return objectNodeResult;
     }
+
+    public String updateRecommendations(String username, String tag) {
+        User user = getUser(username);
+        user.setRecommendation(true);
+        user.updateRecommendations(tag);
+        return "The recommendations for user " + username + " have been updated successfully.";
+    }
+
+
+    public String getGenreBySongName(String songName) {
+        for (Song song: songs) {
+            if (song.getName().equals(songName))
+                return song.getGenre();
+        }
+        return null;
+    }
+
     /**
      * reset
      */
