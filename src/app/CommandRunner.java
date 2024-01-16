@@ -1,5 +1,7 @@
 package app;
 
+import app.PageNavigation.NextPage;
+import app.PageNavigation.PreviousPage;
 import app.audio.Collections.PlaylistOutput;
 import app.player.PlayerStats;
 import app.searchBar.Filters;
@@ -715,6 +717,10 @@ public final class CommandRunner {
             objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().
                     wrappedArtist(commandInput.getUsername())));
         }
+        if (Admin.getInstance().checkIfHost(commandInput.getUsername())) {
+            objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().
+                    wrappedHost(commandInput.getUsername())));
+        }
         return objectNode;
     }
 
@@ -786,6 +792,43 @@ public final class CommandRunner {
         }
 
         objectNode.put("result", merchArrayNode);
+
+        return objectNode;
+    }
+
+    public static ObjectNode nextPage(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        NextPage nextPage = new NextPage(Admin.getInstance().getUser(commandInput.getUsername()));
+        objectNode.put("message", nextPage.execute());
+
+        return objectNode;
+    }
+    public static ObjectNode previousPage(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        PreviousPage previousPage = new PreviousPage(Admin.getInstance().getUser(commandInput.getUsername()));
+        objectNode.put("message", previousPage.execute());
+
+        return objectNode;
+    }
+
+    public static ObjectNode updateRecommendations(final CommandInput commandInput) {
+        User user = Admin.getInstance().getUser(commandInput.getUsername());
+
+        ObjectNode objectNode = objectMapper.createObjectNode();
+        objectNode.put("command", commandInput.getCommand());
+        objectNode.put("user", commandInput.getUsername());
+        objectNode.put("timestamp", commandInput.getTimestamp());
+        objectNode.put("message", Admin.getInstance().updateRecommendations(commandInput.getUsername()));
 
         return objectNode;
     }

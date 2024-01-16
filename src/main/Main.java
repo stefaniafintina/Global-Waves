@@ -60,7 +60,7 @@ public final class Main {
             if (isCreated) {
                 action(file.getName(), filepath);
             }
-            if (i == 11) {
+            if (i == 15) {
                 break;
             }
         }
@@ -146,6 +146,9 @@ public final class Main {
                 case "getNotifications" ->outputs.add(CommandRunner.getNotifications(command));
                 case "buyMerch" ->outputs.add(CommandRunner.buyMerch(command));
                 case "seeMerch" ->outputs.add(CommandRunner.seeMerch(command));
+                case "nextPage" ->outputs.add(CommandRunner.nextPage(command));
+                case "previousPage" ->outputs.add(CommandRunner.previousPage(command));
+                case "updateRecommendations" ->outputs.add(CommandRunner.updateRecommendations(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }
