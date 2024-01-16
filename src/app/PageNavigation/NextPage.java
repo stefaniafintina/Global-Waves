@@ -2,10 +2,10 @@ package app.PageNavigation;
 
 import app.user.User;
 
-public class NextPage implements Command{
-    User user;
+public final class NextPage implements Command {
+    private User user;
 
-    public NextPage(User user) {
+    public NextPage(final User user) {
         this.user = user;
     }
 

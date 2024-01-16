@@ -25,13 +25,22 @@ import app.searchBar.SearchBar;
 import app.utils.Enums;
 import lombok.Getter;
 import lombok.Setter;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.ArrayDeque;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
  * The type User.
  */
-public final class User extends LibraryEntry implements Observer, Subject{
+public final class User extends LibraryEntry implements Observer, Subject {
+    public static final int MAGIC_NUMBER30 = 30;
     @Getter
     private String username;
     @Getter
@@ -317,18 +326,24 @@ public final class User extends LibraryEntry implements Observer, Subject{
 
         player.setSource(searchBar.getLastSelected(), searchBar.getLastSearchType());
         if (searchBar.getLastSearchType().equals("song")) {
-            Integer currentCount = this.listenedSongs.getOrDefault(searchBar.getLastSelected().getName(), 0);
-            this.listenedSongs.put(searchBar.getLastSelected().getName(), currentCount + 1);
+            Integer currentCount = this.listenedSongs.
+                    getOrDefault(searchBar.getLastSelected().getName(), 0);
+            this.listenedSongs.put(searchBar.getLastSelected().getName(),
+                    currentCount + 1);
             if (!isPremium()) {
-                Integer currentCountBreak = this.listenedSongsBreak.getOrDefault(searchBar.getLastSelected().getName(), 0);
-                this.listenedSongsBreak.put(searchBar.getLastSelected().getName(), currentCountBreak + 1);
+                Integer currentCountBreak = this.listenedSongsBreak.
+                        getOrDefault(searchBar.getLastSelected().getName(), 0);
+                this.listenedSongsBreak.put(searchBar.
+                        getLastSelected().getName(), currentCountBreak + 1);
             }
             if (Admin.getInstance().getUser(username).isPremium()) {
-                Integer currentCountPremium = this.listenedSongsPremium.getOrDefault(searchBar.getLastSelected().getName(), 0);
-                this.listenedSongsPremium.put(searchBar.getLastSelected().getName(), currentCountPremium + 1);
+                Integer currentCountPremium = this.listenedSongsPremium.
+                        getOrDefault(searchBar.getLastSelected().getName(), 0);
+                this.listenedSongsPremium.put(searchBar.
+                        getLastSelected().getName(), currentCountPremium + 1);
             }
             for (Album album: Admin.getInstance().getAlbums()) {
-                if (album.getSongs().contains((Song)searchBar.getLastSelected())) {
+                if (album.getSongs().contains((Song) searchBar.getLastSelected())) {
                     Song song = (Song) searchBar.getLastSelected();
                     Integer currCnt = listenedAlbums.getOrDefault(album.getName(), 0);
                     this.listenedAlbums.put(album.getName(), currCnt + 1);
@@ -343,8 +358,10 @@ public final class User extends LibraryEntry implements Observer, Subject{
                     this.addListenedGenre(song.getGenre());
                     User artist = Admin.getInstance().getUser(song.getArtist());
                     if (artist != null) {
-                        Integer countArtist = artist.getListenedSongs().getOrDefault(song.getName(), 0);
-                        Integer countArtistsAlbum = artist.getListenedAlbums().getOrDefault(album.getName(), 0);
+                        Integer countArtist = artist.getListenedSongs().
+                                getOrDefault(song.getName(), 0);
+                        Integer countArtistsAlbum = artist.getListenedAlbums().
+                                getOrDefault(album.getName(), 0);
                         Integer fansCount = artist.getFans().getOrDefault(username, 0);
 
                         artist.getListenedSongs().put(song.getName(), countArtist + 1);
@@ -356,17 +373,24 @@ public final class User extends LibraryEntry implements Observer, Subject{
             }
         } else if (searchBar.getLastSearchType().equals("album")) {
             Song firstSongInAlbum = ((Album) searchBar.getLastSelected()).getSongs().get(0);
-            Integer currentCount = this.getListenedSongs().getOrDefault(firstSongInAlbum.getName(), 0);
-            Integer currCnt = this.getListenedAlbums().getOrDefault(((Album) searchBar.getLastSelected()).getName(), 0);
-            this.getListenedAlbums().put(((Album) searchBar.getLastSelected()).getName(), currCnt + 1);
+            Integer currentCount = this.getListenedSongs().
+                    getOrDefault(firstSongInAlbum.getName(), 0);
+            Integer currCnt = this.getListenedAlbums().getOrDefault(((Album) searchBar.
+                    getLastSelected()).getName(), 0);
+            this.getListenedAlbums().put(((Album) searchBar.getLastSelected()).getName(),
+                    currCnt + 1);
             this.getListenedSongs().put(firstSongInAlbum.getName(), currentCount + 1);
             if (Admin.getInstance().getUser(username).isPremium()) {
-                Integer currentCountPremium = this.listenedSongsPremium.getOrDefault(firstSongInAlbum.getName(), 0);
-                this.listenedSongsPremium.put(firstSongInAlbum.getName(), currentCountPremium + 1);
+                Integer currentCountPremium = this.listenedSongsPremium.
+                        getOrDefault(firstSongInAlbum.getName(), 0);
+                this.listenedSongsPremium.put(firstSongInAlbum.getName(),
+                        currentCountPremium + 1);
             }
             if (!isPremium()) {
-                Integer currentCountBreak = this.listenedSongsBreak.getOrDefault(firstSongInAlbum.getName(), 0);
-                this.listenedSongsBreak.put(firstSongInAlbum.getName(), currentCountBreak + 1);
+                Integer currentCountBreak = this.listenedSongsBreak.
+                        getOrDefault(firstSongInAlbum.getName(), 0);
+                this.listenedSongsBreak.put(firstSongInAlbum.getName(),
+                        currentCountBreak + 1);
                 this.addListenedArtistBreak((firstSongInAlbum).getArtist());
             }
 
@@ -377,14 +401,20 @@ public final class User extends LibraryEntry implements Observer, Subject{
                 this.addListenedArtistPremium((firstSongInAlbum).getArtist());
             }
             for (Album album: Admin.getInstance().getAlbums()) {
-                if (album.getName().equals(((Album) searchBar.getLastSelected()).getName()) && album.getSongs().contains(firstSongInAlbum)) {
+                if (album.getName().equals(((Album) searchBar.
+                        getLastSelected()).getName()) && album.getSongs().
+                        contains(firstSongInAlbum)) {
                     User artist = Admin.getInstance().getUser(album.getOwner());
                     if (artist != null) {
-                        Integer countArtist = artist.getListenedSongs().getOrDefault(firstSongInAlbum.getName(), 0);
-                        Integer countArtistsAlbum = artist.getListenedAlbums().getOrDefault(album.getName(), 0);
-                        Integer fansCount = artist.getFans().getOrDefault(this.getName(), 0);
+                        Integer countArtist = artist.getListenedSongs().
+                                getOrDefault(firstSongInAlbum.getName(), 0);
+                        Integer countArtistsAlbum = artist.getListenedAlbums().
+                                getOrDefault(album.getName(), 0);
+                        Integer fansCount = artist.getFans().getOrDefault(this.
+                                getName(), 0);
 
-                        artist.getListenedSongs().put(firstSongInAlbum.getName(), countArtist + 1);
+                        artist.getListenedSongs().put(firstSongInAlbum.getName(),
+                                countArtist + 1);
                         artist.getListenedAlbums().put(album.getName(), countArtistsAlbum + 1);
                         artist.getFans().put(this.getName(), fansCount + 1);
                     }
@@ -392,23 +422,32 @@ public final class User extends LibraryEntry implements Observer, Subject{
                 }
             }
         } else if (searchBar.getLastSearchType().equals("podcast")) {
-            Episode firstEpisodeInPodcast = ((Podcast) searchBar.getLastSelected()).getEpisodes().get(0);
-            Integer currentCount = this.getListenedEpisodes().getOrDefault(firstEpisodeInPodcast.getName(), 0);
-            Integer currCnt = this.getListenedPodcasts().getOrDefault(((Podcast) searchBar.getLastSelected()).getName(), 0);
-            this.getListenedPodcasts().put(((Podcast) searchBar.getLastSelected()).getName(), currCnt + 1);
+            Episode firstEpisodeInPodcast = ((Podcast) searchBar.getLastSelected()).
+                    getEpisodes().get(0);
+            Integer currentCount = this.getListenedEpisodes().
+                    getOrDefault(firstEpisodeInPodcast.getName(), 0);
+            Integer currCnt = this.getListenedPodcasts().
+                    getOrDefault(((Podcast) searchBar.getLastSelected()).getName(), 0);
+            this.getListenedPodcasts().put(((Podcast) searchBar.
+                    getLastSelected()).getName(), currCnt + 1);
             this.getListenedEpisodes().put(firstEpisodeInPodcast.getName(), currentCount + 1);
 
             this.addListenedHost(((Podcast) searchBar.getLastSelected()).getOwner());
 
             for (Podcast podcast: Admin.getInstance().getPodcasts()) {
-                if (podcast.getName().equals(((Podcast) searchBar.getLastSelected()).getName()) && podcast.getEpisodes().contains(firstEpisodeInPodcast)) {
+                if (podcast.getName().equals(((Podcast) searchBar.
+                        getLastSelected()).getName()) && podcast.getEpisodes().
+                        contains(firstEpisodeInPodcast)) {
                     User host = Admin.getInstance().getUser(podcast.getOwner());
                     if (host != null) {
-                        Integer countArtist = host.getListenedEpisodes().getOrDefault(firstEpisodeInPodcast.getName(), 0);
-                        Integer countArtistsAlbum = host.getListenedPodcasts().getOrDefault(podcast.getName(), 0);
+                        Integer countArtist = host.getListenedEpisodes().
+                                getOrDefault(firstEpisodeInPodcast.getName(), 0);
+                        Integer countArtistsAlbum = host.getListenedPodcasts().
+                                getOrDefault(podcast.getName(), 0);
                         Integer fansCount = host.getFans().getOrDefault(this.getName(), 0);
 
-                        host.getListenedEpisodes().put(firstEpisodeInPodcast.getName(), countArtist + 1);
+                        host.getListenedEpisodes().
+                                put(firstEpisodeInPodcast.getName(), countArtist + 1);
                         host.getListenedPodcasts().put(podcast.getName(), countArtistsAlbum + 1);
                         host.getFans().put(this.getName(), fansCount + 1);
                     }
@@ -719,7 +758,9 @@ public final class User extends LibraryEntry implements Observer, Subject{
         followedPlaylists.add(playlist);
         playlist.increaseFollowers();
 
-        Notifications notification = new Notifications("New follow", "New follow from " + username + ".");
+        Notifications notification =
+                new Notifications("New follow", "New follow from "
+                        + username + ".");
         playlist.notifyObservers(notification);
         return "Playlist followed successfully.";
     }
@@ -779,7 +820,9 @@ public final class User extends LibraryEntry implements Observer, Subject{
         if (albums.contains(album.getName())) {
             return null;
         } else {
-            Notifications notification = new Notifications("New Album", "New Album from " + this.getName() + ".");
+            Notifications notification =
+                    new Notifications("New Album", "New Album from "
+                            + this.getName() + ".");
             notifyObservers(notification);
             albums.add(album);
             return album;
@@ -792,7 +835,9 @@ public final class User extends LibraryEntry implements Observer, Subject{
         if (podcasts.contains(podcast.getName())) {
             return null;
         } else {
-            Notifications notification = new Notifications("New Podcast", "New Podcast from " + this.getName() + ".");
+            Notifications notification =
+                    new Notifications("New Podcast", "New Podcast from "
+                            + this.getName() + ".");
             notifyObservers(notification);
             podcasts.add(podcast);
             return podcast;
@@ -807,7 +852,9 @@ public final class User extends LibraryEntry implements Observer, Subject{
                 return null;
             }
         }
-        Notifications notification = new Notifications("New Event", "New Event from " + this.getName() + ".");
+        Notifications notification =
+                new Notifications("New Event", "New Event from "
+                        + this.getName() + ".");
         notifyObservers(notification);
         events.add(event);
         return event;
@@ -821,7 +868,9 @@ public final class User extends LibraryEntry implements Observer, Subject{
                 return null;
             }
         }
-        Notifications notification = new Notifications("New Merchandise", "New Merchandise from " + this.getName() + ".");
+        Notifications notification =
+                new Notifications("New Merchandise",
+                        "New Merchandise from " + this.getName() + ".");
         notifyObservers(notification);
         merches.add(merch);
         return merch;
@@ -935,41 +984,67 @@ public final class User extends LibraryEntry implements Observer, Subject{
         return followedPlaylistsList;
     }
 
-    public void addListenedArtist(String artist) {
+    /**
+     * Increments the count of times an artist has been listened to.
+     * This method updates the mostListenedArtists map by increasing
+     * the listen count for the specified artist.
+     *
+     * @param artist The name of the artist being listened to.
+     */
+    public void addListenedArtist(final String artist) {
         Integer currentCount = this.mostListenedArtists.getOrDefault(artist, 0);
         this.mostListenedArtists.put(artist, currentCount + 1);
     }
-
-    public void addListenedArtistPremium(String artist) {
+    /**
+     * Increments the count of times an artist has been listened to by a premium user.
+     * This method updates the mostListenedArtistsPremium map by increasing
+     * the listen count for the specified artist.
+     *
+     * @param artist The name of the artist being listened to by a premium user.
+     */
+    public void addListenedArtistPremium(final String artist) {
         Integer currentCount = this.mostListenedArtistsPremium.getOrDefault(artist, 0);
         this.mostListenedArtistsPremium.put(artist, currentCount + 1);
     }
 
-    public void addListenedArtistBreak(String artist) {
+    /***
+     * @param artist
+     */
+    public void addListenedArtistBreak(final String artist) {
         Integer currentCount = this.mostListenedArtistsBreak.getOrDefault(artist, 0);
         this.mostListenedArtistsBreak.put(artist, currentCount + 1);
     }
 
-    public void addListenedHostBreak(String host) {
-        Integer currentCount = this.listenedHostBreak.getOrDefault(host, 0);
-        this.listenedHostBreak.put(host, currentCount + 1);
-    }
-
-    public void addListenedHost(String host) {
+    /**
+     *
+     * @param host
+     */
+    public void addListenedHost(final String host) {
         Integer currentCount = this.listenedHost.getOrDefault(host, 0);
         this.listenedHost.put(host, currentCount + 1);
     }
 
-    public void addListenedHostPremium(String host) {
+    /**
+     *
+     * @param host
+     */
+    public void addListenedHostPremium(final String host) {
         Integer currentCount = this.listenedHostPremium.getOrDefault(host, 0);
         this.listenedHostPremium.put(host, currentCount + 1);
     }
 
-    public void addListenedGenre(String genre) {
+    /**
+     *
+     * @param genre
+     */
+    public void addListenedGenre(final String genre) {
         Integer currentCount = this.mostListenedGenres.getOrDefault(genre, 0);
         this.mostListenedGenres.put(genre, currentCount + 1);
     }
 
+    /**
+     *
+     */
     public void orderByNumOfListen() {
         LinkedHashMap<String, Integer> sortedMap = listenedSongs.entrySet()
                 .stream()
@@ -1103,41 +1178,88 @@ public final class User extends LibraryEntry implements Observer, Subject{
         listenedHost.putAll(sortedMap);
     }
 
-    public String subscribe(String username) {
+    /**
+     * Handles the subscription or unsubscription of a user to or from an artist or host's page.
+     * This method first checks if the user exists and if they are on an artist's or host's page.
+     * If the user is already subscribed to the page, they are unsubscribed; otherwise,
+     * they are subscribed.
+     *
+     * @param username The username of the user attempting to subscribe or unsubscribe.
+     * @return String A message indicating the result of the operation.
+     *         Possible outcomes are:
+     *         - Notification of a non-existent username.
+     *         - Information that subscription is only available on artist or host pages.
+     *         - Confirmation of successful subscription or unsubscription.
+     */
+    public String subscribe(final String username) {
         User user = Admin.getInstance().getUser(username);
-        if (user == null)
+        if (user == null) {
             return "The username " + username + "doesn't exist.";
-        if (!user.getPage().getType().equals("artist") && !user.getPage().getType().equals("host")){
+        }
+        if (!user.getPage().getType().equals("artist")
+                && !user.getPage().getType().equals("host")) {
             return "To subscribe you need to be on the page of an artist or host.";
         }
 
         String ownerName = user.getPage().getOwner().getName();
-        if (Admin.getInstance().getUser(ownerName).getSubscriptions().contains(Admin.getInstance().getUser(username))) {
-            Admin.getInstance().getUser(ownerName).removeObserver(Admin.getInstance().getUser(username));
+        if (Admin.getInstance().getUser(ownerName).getSubscriptions().contains(Admin.
+                getInstance().getUser(username))) {
+            Admin.getInstance().getUser(ownerName).removeObserver(Admin.
+                    getInstance().getUser(username));
             return username + " unsubscribed from " + ownerName + " successfully.";
         }
-        Admin.getInstance().getUser(ownerName).registerObserver(Admin.getInstance().getUser(username));
+        Admin.getInstance().getUser(ownerName).registerObserver(Admin.
+                getInstance().getUser(username));
 
         return username + " subscribed to " + ownerName + " successfully.";
     }
 
-    public String buyMerch(String username, String merchName) {
+    /**
+     * Handles the purchase of merchandise by a user from an artist's page.
+     * This method checks if the user exists and if they are on an artist's page.
+     * If the specified merchandise is found, it updates the user's merchandise
+     * collection and the artist's merchandise revenue.
+     *
+     * @param username The username of the user attempting to buy merchandise.
+     * @param merchName The name of the merchandise to be purchased.
+     * @return String A message indicating the result of the operation.
+     *         Possible outcomes include:
+     *         - non-existent username.
+     *         - Information that merchandise can only be bought from an
+     *   artist's page.
+     *         - Confirmation of successful merchandise purchase.
+     *         - Notice that the specified merchandise does not exist.
+     */
+    public String buyMerch(final String username, final String merchName) {
         User user = Admin.getInstance().getUser(username);
-        if (user== null)
+        if (user == null) {
             return "The username " + username + " doesn't exist.";
-        if (!user.getPage().getType().equals("artist"))
+        }
+        if (!user.getPage().getType().equals("artist")) {
             return "Cannot buy merch from this page.";
+        }
         for (User artist: Admin.getInstance().getArtists()) {
-            for (Merch merch: artist.merches)
+            for (Merch merch: artist.merches) {
                 if (merch.getName().equals(merchName)) {
                     user.getMyMerches().add(merchName);
-                    artist.setMerchRevenue(artist.getMerchRevenue() + merch.getPrice());
+                    artist.setMerchRevenue(artist.getMerchRevenue()
+                            + merch.getPrice());
                     return username + " has added new merch successfully.";
                 }
+            }
         }
         return "The merch " + merchName + " doesn't exist.";
     }
 
+    /**
+     * Navigates to the next page in the user's page history.
+     * This method checks if there are any pages available in
+     * the history to move forward to.
+     * If available, the user's current page is updated to the next page
+     * in the history.
+     *
+     * @return String A message indicating the result of the navigation.
+     */
     public String nextPage() {
         if (page == null || pageHistory.isEmpty()) {
             return "There are no pages left to go forward.";
@@ -1146,6 +1268,14 @@ public final class User extends LibraryEntry implements Observer, Subject{
         return "The user " + username + " has navigated successfully to the next page.";
     }
 
+    /**
+     * Navigates to the previous page in the user's page history.
+     * This method checks if there are sufficient pages in the history to move backward.
+     * If possible, the user's current page is updated to the previous page in the history,
+     * and the page type is updated accordingly in the admin instance.
+     *
+     * @return String A message indicating the result of the navigation.
+     */
     public String previousPage() {
         if (pageHistory.size() <= 1) {
             return "There are no pages left to go backward.";
@@ -1156,6 +1286,19 @@ public final class User extends LibraryEntry implements Observer, Subject{
         return "The user " + username + " has navigated successfully to the previous page.";
     }
 
+    /**
+     * Compiles and sorts the user's most listened genres based on their liked songs
+     * and playlists.
+     * This method aggregates the count of each genre from the user's liked songs,
+     * followed playlists,
+     * and personal playlists. It then sorts these genres based on their
+     * count in descending order
+     * (and alphabetically for ties) and returns the sorted list.
+     *
+     * @return LinkedHashMap<String, Integer> A sorted map of genres with their
+     * corresponding counts,
+     * ordered by the frequency of occurrence in descending order.
+     */
     public LinkedHashMap<String, Integer> myTopGenre() {
         for (Song song: likedSongs) {
             int genreCount = this.getTopGenre().getOrDefault(song.getGenre(), 0);
@@ -1189,22 +1332,32 @@ public final class User extends LibraryEntry implements Observer, Subject{
         return  topGenre;
     }
 
-    public ArrayList<String> updateRecommendations(String tag) {
+    /**
+     * Recommendations
+     * @param tag
+     * @return
+     */
+    public ArrayList<String> updateRecommendations(final String tag) {
         if (tag.equals("random_song")) {
             recommendationType = tag;
             int songTime = 0;
-            for (Song song: Admin.getInstance().getSongs())
-                if (song.getName().equals(player.getCurrentAudioFile().getName()))
+            for (Song song: Admin.getInstance().getSongs()) {
+                if (song.getName().equals(player.getCurrentAudioFile().getName())) {
                     songTime = song.getDuration();
-            if (songTime - player.getSource().getDuration() < 30) {
+                }
+            }
+            if (songTime - player.getSource().getDuration() < MAGIC_NUMBER30) {
                 songsRecommendation.add(player.getCurrentAudioFile().getName());
             } else {
-                String currentGenre = Admin.getInstance().getGenreBySongName(player.getCurrentAudioFile().getName());
+                String currentGenre = Admin.getInstance().
+                        getGenreBySongName(player.getCurrentAudioFile().getName());
 
                 ArrayList<Song> songsWithGenre = new ArrayList<>();
-                for (Song song: Admin.getInstance().getSongs())
-                    if (song.getGenre().equals(currentGenre))
+                for (Song song: Admin.getInstance().getSongs()) {
+                    if (song.getGenre().equals(currentGenre)) {
                         songsWithGenre.add(song);
+                    }
+                }
                 Random random = new Random(songTime - player.getSource().getDuration());
                 Song selectedSong = songsWithGenre.get(random.nextInt(songsWithGenre.size()));
                 songsRecommendation.add(selectedSong.getName());
@@ -1231,25 +1384,26 @@ public final class User extends LibraryEntry implements Observer, Subject{
     }
 
     @Override
-    public void receiveUpdate(Notifications notification) {
-        if (!isArtist() && !isHost())
+    public void receiveUpdate(final Notifications notification) {
+        if (!isArtist() && !isHost()) {
             notif.add(notification);
+        }
     }
 
     @Override
-    public void registerObserver(Observer o) {
+    public void registerObserver(final Observer o) {
         subscriptions.add(o);
         this.subscribers++;
     }
 
     @Override
-    public void removeObserver(Observer o) {
+    public void removeObserver(final Observer o) {
         subscriptions.remove(o);
         this.subscribers--;
     }
 
     @Override
-    public void notifyObservers(Notifications notification) {
+    public void notifyObservers(final Notifications notification) {
         if (isArtist()) {
             for (Observer subscription : subscriptions) {
                 subscription.receiveUpdate(notification);

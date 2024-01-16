@@ -30,7 +30,6 @@ public final class Player {
     @Getter
     private String type;
     private ArrayList<PodcastBookmark> bookmarks = new ArrayList<>();
-    AudioFile lastAudioFile = null;
     /**
      * Instantiates a new Player.
      */
@@ -235,7 +234,7 @@ public final class Player {
      * the current source is null.
      * @throws IllegalArgumentException If the provided time is negative.
      */
-    public void simulatePlayer(int time, User user) {
+    public void simulatePlayer(int time, final User user) {
         User artist = null;
 
         if (source != null && source.getDuration() > 0) {
@@ -246,28 +245,32 @@ public final class Player {
         if (!paused && source != null) {
             int ok = 0;
             while (time >= source.getDuration()) {
-
                 time -= source.getDuration();
-                lastAudioFile = this.getCurrentAudioFile();
                 next();
 
                 if (user.isBreakStatus()) {
                     int songTotal = 0;
-                    for (Map.Entry<String, Integer> entry : user.getListenedSongsBreak().entrySet()) {
+                    for (Map.Entry<String, Integer> entry : user.
+                            getListenedSongsBreak().entrySet()) {
                         songTotal += entry.getValue();
                     }
-                    for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsBreak().entrySet()) {
+                    for (Map.Entry<String, Integer> entry : user.
+                            getMostListenedArtistsBreak().entrySet()) {
                         User artistBreak =  Admin.getInstance().getUser(entry.getKey());
                         double songRevenue = artistBreak.getSongRevenue();
-                        songRevenue = songRevenue + (user.getBreakValue() * entry.getValue()) / songTotal;
+                        songRevenue = songRevenue + (user.getBreakValue() * entry.getValue())
+                                / songTotal;
 
                         artistBreak.setSongRevenue(songRevenue);
                     }
-                    for (Map.Entry<String, Integer> songEntry : user.getListenedSongsBreak().entrySet()) {
+                    for (Map.Entry<String, Integer> songEntry : user.
+                            getListenedSongsBreak().entrySet()) {
                         User foundArtist = Admin.getInstance().getArtistBySong(songEntry.getKey());
                         if (foundArtist != null) {
-                            double revenueForASong = user.getBreakValue() * songEntry.getValue() / songTotal;
-                            double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                            double revenueForASong = user.getBreakValue()
+                                    * songEntry.getValue() / songTotal;
+                            double currentCountPremium = foundArtist.getMostProfitableSong().
+                                    getOrDefault(songEntry.getKey(), 0.0);
                             foundArtist.getMostProfitableSong().put(songEntry.getKey(),
                                     currentCountPremium + revenueForASong);
                         }
@@ -277,53 +280,75 @@ public final class Player {
                     user.setBreakStatus(false);
                 }
                 if (this.getCurrentAudioFile() != null && this.type.equals("album")) {
-                    Integer currentCount = user.getListenedSongs().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                    Integer currCnt = user.getListenedAlbums().getOrDefault(source.getAudioCollection().getName(), 0);
-                    user.getListenedAlbums().put(source.getAudioCollection().getName(), currCnt + 1);
-                    user.getListenedSongs().put(this.getCurrentAudioFile().getName(), currentCount + 1);
+                    Integer currentCount = user.getListenedSongs().getOrDefault(this.
+                            getCurrentAudioFile().getName(), 0);
+                    Integer currCnt = user.getListenedAlbums().getOrDefault(source.
+                            getAudioCollection().getName(), 0);
+                    user.getListenedAlbums().put(source.getAudioCollection().
+                            getName(), currCnt + 1);
+                    user.getListenedSongs().put(this.getCurrentAudioFile().getName(),
+                            currentCount + 1);
                     if (user.isPremium()) {
-                        Integer currentCountPremium = user.getListenedSongsPremium().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                        user.getListenedSongsPremium().put(this.getCurrentAudioFile().getName(), currentCountPremium + 1);
+                        Integer currentCountPremium = user.getListenedSongsPremium().
+                                getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                        user.getListenedSongsPremium().put(this.getCurrentAudioFile().
+                                getName(), currentCountPremium + 1);
                     }
                     if (!user.isPremium()) {
-                        Integer currentCountBreak = user.getListenedSongsBreak().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                        user.getListenedSongsBreak().put(this.getCurrentAudioFile().getName(), currentCountBreak + 1);
-                        user.addListenedArtistBreak(((Song)this.getCurrentAudioFile()).getArtist());
+                        Integer currentCountBreak = user.getListenedSongsBreak().
+                                getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                        user.getListenedSongsBreak().put(this.getCurrentAudioFile().getName(),
+                                currentCountBreak + 1);
+                        user.addListenedArtistBreak(((Song) this.getCurrentAudioFile()).getArtist());
                     }
 
-                    user.addListenedGenre(((Song)this.getCurrentAudioFile()).getGenre());
-                    user.addListenedArtist(((Song)this.getCurrentAudioFile()).getArtist());
+                    user.addListenedGenre(((Song) this.getCurrentAudioFile()).getGenre());
+                    user.addListenedArtist(((Song) this.getCurrentAudioFile()).getArtist());
 
                     if (user.isPremium()) {
-                        user.addListenedArtistPremium(((Song)this.getCurrentAudioFile()).getArtist());
+                        user.addListenedArtistPremium(((Song) this.
+                                getCurrentAudioFile()).getArtist());
                     }
                     for (Album album: Admin.getInstance().getAlbums()) {
-                        if (album.getName().equals(source.getAudioCollection().getName()) && album.getSongs().contains((Song)this.getCurrentAudioFile())) {
+                        if (album.getName().equals(source.getAudioCollection().getName())
+                                && album.getSongs().contains((Song) this.getCurrentAudioFile())) {
                             artist = Admin.getInstance().getUser(album.getOwner());
                             if (artist != null) {
-                                Integer countArtist = artist.getListenedSongs().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                                Integer countArtistsAlbum = artist.getListenedAlbums().getOrDefault(album.getName(), 0);
-                                Integer fansCount = artist.getFans().getOrDefault(user.getName(), 0);
+                                Integer countArtist = artist.getListenedSongs().getOrDefault(this.
+                                        getCurrentAudioFile().getName(), 0);
+                                Integer countArtistsAlbum = artist.getListenedAlbums().
+                                        getOrDefault(album.getName(), 0);
+                                Integer fansCount = artist.getFans().
+                                        getOrDefault(user.getName(), 0);
 
-                                artist.getListenedSongs().put(this.getCurrentAudioFile().getName(), countArtist + 1);
-                                artist.getListenedAlbums().put(album.getName(), countArtistsAlbum + 1);
+                                artist.getListenedSongs().put(this.getCurrentAudioFile().getName(),
+                                        countArtist + 1);
+                                artist.getListenedAlbums().put(album.getName(),
+                                        countArtistsAlbum + 1);
                                 artist.getFans().put(user.getName(), fansCount + 1);
                             }
                             break;
                         }
                     }
                 } else if (this.getCurrentAudioFile() != null && this.type.equals("podcast")) {
-                    Integer currentCount = user.getListenedEpisodes().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                    Integer currCnt = user.getListenedPodcasts().getOrDefault(source.getAudioCollection().getName(), 0);
+                    Integer currentCount = user.getListenedEpisodes().
+                            getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                    Integer currCnt = user.getListenedPodcasts().
+                            getOrDefault(source.getAudioCollection().getName(), 0);
                     user.getListenedPodcasts().put(source.getAudioCollection().getName(), currCnt + 1);
-                    user.getListenedEpisodes().put(this.getCurrentAudioFile().getName(), currentCount + 1);
+                    user.getListenedEpisodes().put(this.getCurrentAudioFile().getName(),
+                            currentCount + 1);
                     if (user.isPremium()) {
-                        Integer currentCountPremium = user.getListenedSongsPremium().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                        user.getListenedEpisodesPremium().put(this.getCurrentAudioFile().getName(), currentCountPremium + 1);
+                        Integer currentCountPremium = user.getListenedSongsPremium().
+                                getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                        user.getListenedEpisodesPremium().put(this.getCurrentAudioFile().
+                                getName(), currentCountPremium + 1);
                     }
                     if (!user.isPremium()) {
-                        Integer currentCountBreak = user.getListenedSongsBreak().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                        user.getListenedEpisodesBreak().put(this.getCurrentAudioFile().getName(), currentCountBreak + 1);
+                        Integer currentCountBreak = user.getListenedSongsBreak().
+                                getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                        user.getListenedEpisodesBreak().put(this.getCurrentAudioFile().
+                                getName(), currentCountBreak + 1);
                         user.addListenedHost((source.getAudioCollection()).getOwner());
                     }
 
@@ -333,14 +358,19 @@ public final class Player {
                         user.addListenedHostPremium((source.getAudioCollection()).getOwner());
                     }
                     for (Podcast podcast: Admin.getInstance().getPodcasts()) {
-                        if (podcast.getName().equals(source.getAudioCollection().getName()) && podcast.getEpisodes().contains((Episode) this.getCurrentAudioFile())) {
+                        if (podcast.getName().equals(source.getAudioCollection().getName())
+                                && podcast.getEpisodes().
+                                contains((Episode) this.getCurrentAudioFile())) {
                             artist = Admin.getInstance().getUser(podcast.getOwner());
                             if (artist != null) {
-                                Integer countArtist = artist.getListenedEpisodes().getOrDefault(this.getCurrentAudioFile().getName(), 0);
-                                Integer countArtistsPodcasts = artist.getListenedAlbums().getOrDefault(podcast.getName(), 0);
+                                Integer countArtist = artist.getListenedEpisodes().
+                                        getOrDefault(this.getCurrentAudioFile().getName(), 0);
+                                Integer countArtistsPodcasts = artist.getListenedAlbums().
+                                        getOrDefault(podcast.getName(), 0);
                                 Integer fansCount = artist.getFans().getOrDefault(user.getName(), 0);
 
-                                artist.getListenedEpisodes().put(this.getCurrentAudioFile().getName(), countArtist + 1);
+                                artist.getListenedEpisodes().put(this.getCurrentAudioFile().
+                                        getName(), countArtist + 1);
                                 artist.getListenedAlbums().put(podcast.getName(), countArtistsPodcasts + 1);
                                 artist.getFans().put(user.getName(), fansCount + 1);
                             }

@@ -12,7 +12,6 @@ import app.audio.Files.Episode;
 import app.audio.Files.Song;
 import app.artistsPage.Event;
 import app.hostsPage.Announcement;
-import app.player.Player;
 import app.user.User;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -23,12 +22,18 @@ import fileio.input.PodcastInput;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+
 
 import static app.CommandRunner.objectMapper;
 
 public final class Admin {
-    public static final int MAGIC_NUMBER = 5;
+    public static final int MAGIC_NUMBER5 = 5;
+    public static final double MAGIC_NUMBER_MILION = 1000000.0;
     public static final int MAGIC_NUMBER3 = 3;
     public static final int MAGIC_NUMBER2 = 2;
     public static final int MAGIC_NUMBER0 = 0;
@@ -62,6 +67,9 @@ public final class Admin {
     private static Admin instance = null;
     private boolean connectionStatus = true;
 
+    /***
+     *
+     */
     public static Admin getInstance() {
         if (instance == null) {
             instance = new Admin();
@@ -150,11 +158,14 @@ public final class Admin {
         }
         return albums;
     }
-
-    public User getArtistBySong(String name) {
+    /**
+     * This method return the artist of a specific song
+     */
+    public User getArtistBySong(final String name) {
         for (Song song: songs) {
-            if (song.getName().equals(name))
+            if (song.getName().equals(name)) {
                 return getUser(song.getArtist());
+            }
         }
         return null;
     }
@@ -199,7 +210,7 @@ public final class Admin {
         int count = 0;
 
         for (Song song : sortedSongs) {
-            if (count >= MAGIC_NUMBER) {
+            if (count >= MAGIC_NUMBER5) {
                 break;
             }
             topSongs.add(song.getName());
@@ -220,7 +231,7 @@ public final class Admin {
         List<String> topPlaylists = new ArrayList<>();
         int count = 0;
         for (Playlist playlist : sortedPlaylists) {
-            if (count >= MAGIC_NUMBER) {
+            if (count >= MAGIC_NUMBER5) {
                 break;
             }
             topPlaylists.add(playlist.getName());
@@ -252,7 +263,7 @@ public final class Admin {
         ArrayList<String> albumsList = new ArrayList<>();
         int cnt = 0;
         for (Album album: albumLikes) {
-            if (cnt < MAGIC_NUMBER) {
+            if (cnt < MAGIC_NUMBER5) {
                 albumsList.add(album.getName());
             } else {
                 break;
@@ -287,7 +298,7 @@ public final class Admin {
         ArrayList<String> albumsList = new ArrayList<>();
         int cnt = 0;
         for (Map.Entry<String, Integer> entry : entryList) {
-            if (cnt < MAGIC_NUMBER) {
+            if (cnt < MAGIC_NUMBER5) {
                 albumsList.add(entry.getKey());
             } else {
                 break;
@@ -1054,8 +1065,24 @@ public final class Admin {
         return username + " is trying to access a non-existent page.";
     }
 
-
-    public ObjectNode wrappedUser(String username) {
+    /**
+     * Constructs a JSON object (ObjectNode) containing information about a user's
+     * listening habits.
+     * The method gathers data about the top 5 songs, artists, genres, albums, and
+     * episodes listened to by the user.
+     * It organizes this data into a structured JSON format.
+     *
+     * @param username The username of the user for whom the data is to be fetched.
+     *                 The method uses this parameter to retrieve the corresponding User object.
+     * @return ObjectNode A JSON object containing the structured information about
+     * the user's listening habits.
+     *         The structure includes top artists, genres, songs, albums, and episodes.
+     *         If the user is not found, the method returns null.
+     *
+     * The method iterates through each list (songs, artists, genres, albums, episodes)
+     * and adds up to the top 5 entries of each category to the respective JSON node.
+     */
+    public ObjectNode wrappedUser(final String username) {
 
         User user = getUser(username);
         if (user != null) {
@@ -1065,9 +1092,10 @@ public final class Admin {
             ObjectNode objectNodeResult = objectMapper.createObjectNode();
 
             int cnt = 0;
+
             ObjectNode objectNodeS = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeS.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1076,7 +1104,7 @@ public final class Admin {
             cnt = 0;
             ObjectNode objectNodeA = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getMostListenedArtists().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeA.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1085,7 +1113,7 @@ public final class Admin {
             cnt = 0;
             ObjectNode objectNodeG = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getMostListenedGenres().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeG.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1094,7 +1122,7 @@ public final class Admin {
             cnt = 0;
             ObjectNode objectNodeAlb = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedAlbums().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeAlb.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1103,23 +1131,24 @@ public final class Admin {
             cnt = 0;
             ObjectNode objectNodeEp = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedEpisodes().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeEp.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
             }
 
-            objectNodeResult.set("topArtists",objectNodeA);
-            objectNodeResult.set("topGenres",objectNodeG);
+            objectNodeResult.set("topArtists", objectNodeA);
+            objectNodeResult.set("topGenres", objectNodeG);
             objectNodeResult.set("topSongs", objectNodeS);
             objectNodeResult.set("topAlbums", objectNodeAlb);
-            objectNodeResult.set("topEpisodes",objectNodeEp);
+            objectNodeResult.set("topEpisodes", objectNodeEp);
             return objectNodeResult;
         }
         return null;
     }
-
-    public ObjectNode wrappedArtist(String username) {
+    /**
+     * */
+    public ObjectNode wrappedArtist(final String username) {
         User user = getUser(username);
         if (user != null) {
             user.orderByNumOfListen();
@@ -1128,7 +1157,7 @@ public final class Admin {
             int cnt = 0;
             ObjectNode objectNodeS = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedSongs().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeS.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1137,7 +1166,7 @@ public final class Admin {
             cnt = 0;
             ObjectNode objectNodeAlb = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedAlbums().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeAlb.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1146,7 +1175,7 @@ public final class Admin {
             cnt = 0;
             ArrayNode objectNodeFans = objectMapper.createArrayNode();
             for (Map.Entry<String, Integer> entry : user.getFans().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeFans.add(entry.getKey());
                 }
                 cnt++;
@@ -1160,8 +1189,10 @@ public final class Admin {
         }
         return null;
     }
-
-    public ObjectNode wrappedHost(String username) {
+    /**
+     *
+     */
+    public ObjectNode wrappedHost(final String username) {
         User user = getUser(username);
         if (user != null) {
             user.orderByNumOfListen();
@@ -1170,7 +1201,7 @@ public final class Admin {
             int cnt = 0;
             ObjectNode objectNodeS = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedEpisodes().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeS.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1179,7 +1210,7 @@ public final class Admin {
             cnt = 0;
             ObjectNode objectNodeAlb = objectMapper.createObjectNode();
             for (Map.Entry<String, Integer> entry : user.getListenedPodcasts().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeAlb.put(entry.getKey(), entry.getValue());
                 }
                 cnt++;
@@ -1188,7 +1219,7 @@ public final class Admin {
             cnt = 0;
             ArrayNode objectNodeFans = objectMapper.createArrayNode();
             for (Map.Entry<String, Integer> entry : user.getFans().entrySet()) {
-                if (cnt < 5) {
+                if (cnt < MAGIC_NUMBER5) {
                     objectNodeFans.add(entry.getKey());
                 }
                 cnt++;
@@ -1201,6 +1232,10 @@ public final class Admin {
         return null;
     }
 
+    /**
+     * This method returns specific messages if a user
+     * can pursue a premium subscription
+     */
     public String getPremiumSubscription(final String username) {
         User user = getUser(username);
         if (user != null) {
@@ -1215,27 +1250,46 @@ public final class Admin {
         }
         return "The username " + username + " doesn't exist.";
     }
-
+    /**
+     * Cancels the premium subscription of a user if they currently have one.
+     * This method checks if the specified user exists and if they have a premium subscription.
+     * If the user is a premium subscriber, it performs necessary operations
+     * like adjusting song revenue
+     * (in case the user does not renew their subscription) and then cancels the
+     * premium subscription.
+     *
+     * @param username The username of the user whose premium subscription is to be cancelled.
+     * @return String A message indicating the result of the operation.
+     *         It returns a success message if the subscription is cancelled,
+     *         a message stating the user is not premium if they aren't,
+     *         or a message indicating the username doesn't exist if the user is not found.
+     */
     public String cancelSubscription(final String username) {
         User user = getUser(username);
         if (user != null) {
             if (user.isPremium()) {
                 user.setPremium(false);
                 int songTotal = 0;
-                for (Map.Entry<String, Integer> entry : user.getListenedSongsPremium().entrySet()) {
+                for (Map.Entry<String, Integer> entry : user.
+                        getListenedSongsPremium().entrySet()) {
                     songTotal += entry.getValue();
                 }
-                for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsPremium().entrySet()) {
+                for (Map.Entry<String, Integer> entry : user.
+                        getMostListenedArtistsPremium().entrySet()) {
                     User artist =  Admin.getInstance().getUser(entry.getKey());
                     double songRevenue = artist.getSongRevenue();
-                    songRevenue = songRevenue + (1000000.0 * entry.getValue()) / songTotal;
+                    songRevenue = songRevenue + (MAGIC_NUMBER_MILION * entry.getValue())
+                            / songTotal;
                     artist.setSongRevenue(songRevenue);
                 }
-                for (Map.Entry<String, Integer> songEntry : user.getListenedSongsPremium().entrySet()) {
+                for (Map.Entry<String, Integer> songEntry : user.
+                        getListenedSongsPremium().entrySet()) {
                     User foundArtist = getArtistBySong(songEntry.getKey());
                     if (foundArtist != null) {
-                        double revenueForASong = 1000000.0 *  songEntry.getValue()/ songTotal;
-                        double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                        double revenueForASong = MAGIC_NUMBER_MILION * songEntry.getValue()
+                                / songTotal;
+                        double currentCountPremium = foundArtist.getMostProfitableSong().
+                                getOrDefault(songEntry.getKey(), 0.0);
                         foundArtist.getMostProfitableSong().put(songEntry.getKey(),
                                 currentCountPremium + revenueForASong);
 
@@ -1249,26 +1303,54 @@ public final class Admin {
         return "The username " + username + " doesn't exist.";
     }
 
-    public String adBreak(String username, double value) {
+    /**
+     * Inserts an ad break into the current audio playback for a user, if applicable.
+     * This method checks if the user exists and if they are currently playing music.
+     * If conditions are met,
+     * it sets an ad break for the user, extends the duration of the current playing song
+     * by 10 seconds (the length of the ad),
+     * and assigns the ad's value.
+     *
+     * @param username The username of the user for whom the ad break is to be set.
+     * @param value The monetary value associated with the ad.
+     * @return String A message indicating the result of the operation.
+     *         Returns a success message if the ad is inserted,
+     *         a message stating that the user is not playing any music if applicable,
+     *         or a message indicating the username doesn't exist if the user is not found.
+     */
+    public String adBreak(final String username, final double value) {
         User user = getUser(username);
-        if (user ==  null)
+        if (user ==  null) {
             return "The username " + username + " doesn't exist.";
-        else if (user.getPlayerType().equals("podcast") ||
-                (user.getPlayer().getCurrentAudioFile() == null)) {
+        } else if (user.getPlayerType() != null
+                && user.getPlayerType().equals("podcast")
+                || (user.getPlayer().getCurrentAudioFile() == null)) {
             return username + " is not playing any music.";
         } else {
-
             user.setBreakStatus(true);
-            user.getPlayer().getSource().setRemainedDuration(user.getPlayer().getSource().getDuration() + 10);
+            user.getPlayer().getSource().
+                    setRemainedDuration(user.getPlayer().getSource().getDuration()
+                            + MAGIC_NUMBER10);
             user.setBreakValue(value);
             return "Ad inserted successfully.";
         }
-
     }
 
-    public ArrayNode getNotifications(String username) {
-        User user = getUser(username);
+    /**
+     * Retrieves and clears the notifications for a given user.
+     * This method fetches all notifications for the specified user and
+     * formats them into an ArrayNode.
+     * Each notification is represented as an ObjectNode with details like name and description.
+     * After fetching, it clears the notifications from the user's record.
+     *
+     * @param username The username of the user whose notifications are to be retrieved.
+     * @return ArrayNode A JSON array containing the user's notifications.
+     *         Each element in the array is an ObjectNode with details of a notification.
+     *         If the user does not exist or has no notifications, returns an empty array.
+     */
 
+    public ArrayNode getNotifications(final String username) {
+        User user = getUser(username);
         ArrayNode objectNodeResult = objectMapper.createArrayNode();;
         for (Notifications notification: user.getNotif()) {
             ObjectNode notificationNode = objectMapper.createObjectNode();
@@ -1280,18 +1362,35 @@ public final class Admin {
         return objectNodeResult;
     }
 
-    public String updateRecommendations(String username, String tag) {
+    /**
+     * Updates the recommendations for a specific user based on a given tag.
+     * This method sets the recommendation flag for the user to
+     * true and updates their recommendations
+     * with the provided tag. It's assumed that the user's recommendations are
+     * updated based on this tag.
+     *
+     * @param username The username of the user whose recommendations are to be updated.
+     * @param tag The tag used to update the user's recommendations.
+     * @return String A message indicating that the recommendations for the user have
+     * been updated successfully.
+     */
+    public String updateRecommendations(final String username, final String tag) {
         User user = getUser(username);
         user.setRecommendation(true);
         user.updateRecommendations(tag);
         return "The recommendations for user " + username + " have been updated successfully.";
     }
 
-
-    public String getGenreBySongName(String songName) {
+    /**
+     *
+     * @param songName
+     * @return
+     */
+    public String getGenreBySongName(final String songName) {
         for (Song song: songs) {
-            if (song.getName().equals(songName))
+            if (song.getName().equals(songName)) {
                 return song.getGenre();
+            }
         }
         return null;
     }

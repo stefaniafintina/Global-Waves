@@ -5,7 +5,6 @@ import app.Observer;
 import app.Subject;
 import app.audio.Files.AudioFile;
 import app.audio.Files.Song;
-import app.user.User;
 import app.utils.Enums;
 import lombok.Getter;
 import lombok.Setter;
@@ -107,17 +106,17 @@ public final class Playlist extends AudioCollection implements Subject {
     }
 
     @Override
-    public void registerObserver(Observer o) {
+    public void registerObserver(final Observer o) {
         this.playlistOwner = o;
     }
 
     @Override
-    public void removeObserver(Observer o) {
+    public void removeObserver(final Observer o) {
         this.playlistOwner = null;
     }
 
     @Override
-    public void notifyObservers(Notifications notification) {
+    public void notifyObservers(final Notifications notification) {
         this.playlistOwner.receiveUpdate(notification);
     }
 }

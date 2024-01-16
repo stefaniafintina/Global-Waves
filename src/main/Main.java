@@ -36,7 +36,6 @@ public final class Main {
      * @throws IOException in case of exceptions to reading / writing
      */
     public static void main(final String[] args) throws IOException {
-        int i = 0;
         File directory = new File(CheckerConstants.TESTS_PATH);
         Path path = Paths.get(CheckerConstants.RESULT_PATH);
         File[] inputDir = directory.listFiles();
@@ -53,15 +52,11 @@ public final class Main {
             if (file.getName().startsWith("library")) {
                 continue;
             }
-            i++;
             String filepath = CheckerConstants.OUT_PATH + file.getName();
             File out = new File(filepath);
             boolean isCreated = out.createNewFile();
             if (isCreated) {
                 action(file.getName(), filepath);
-            }
-            if (i == 15) {
-                break;
             }
         }
 
@@ -138,18 +133,20 @@ public final class Main {
                 case "changePage" -> outputs.add(CommandRunner.changePage(command));
                 case "getTop5Albums" -> outputs.add(CommandRunner.getTop5Albums(command));
                 case "getTop5Artists" -> outputs.add(CommandRunner.getTop5Artists(command));
-                case "wrapped" ->outputs.add(CommandRunner.wrapped(command));
-                case "buyPremium" ->outputs.add(CommandRunner.buyPremium(command));
-                case "cancelPremium" ->outputs.add(CommandRunner.cancelPremium(command));
-                case "adBreak" ->outputs.add(CommandRunner.adBreak(command));
-                case "subscribe" ->outputs.add(CommandRunner.subscribe(command));
-                case "getNotifications" ->outputs.add(CommandRunner.getNotifications(command));
-                case "buyMerch" ->outputs.add(CommandRunner.buyMerch(command));
-                case "seeMerch" ->outputs.add(CommandRunner.seeMerch(command));
-                case "nextPage" ->outputs.add(CommandRunner.nextPage(command));
-                case "previousPage" ->outputs.add(CommandRunner.previousPage(command));
-                case "updateRecommendations" ->outputs.add(CommandRunner.updateRecommendations(command));
-                case "loadRecommendations" ->outputs.add(CommandRunner.loadRecommendations(command));
+                case "wrapped" -> outputs.add(CommandRunner.wrapped(command));
+                case "buyPremium" -> outputs.add(CommandRunner.buyPremium(command));
+                case "cancelPremium" -> outputs.add(CommandRunner.cancelPremium(command));
+                case "adBreak" -> outputs.add(CommandRunner.adBreak(command));
+                case "subscribe" -> outputs.add(CommandRunner.subscribe(command));
+                case "getNotifications" -> outputs.add(CommandRunner.getNotifications(command));
+                case "buyMerch" -> outputs.add(CommandRunner.buyMerch(command));
+                case "seeMerch" -> outputs.add(CommandRunner.seeMerch(command));
+                case "nextPage" -> outputs.add(CommandRunner.nextPage(command));
+                case "previousPage" -> outputs.add(CommandRunner.previousPage(command));
+                case "updateRecommendations" -> outputs.add(CommandRunner.
+                        updateRecommendations(command));
+                case "loadRecommendations" -> outputs.add(CommandRunner.
+                        loadRecommendations(command));
                 default -> System.out.println("Invalid command " + commandName);
             }
         }
