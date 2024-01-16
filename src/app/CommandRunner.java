@@ -11,19 +11,25 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.input.CommandInput;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.List;
+import java.util.Comparator;
+
 import java.util.stream.Collectors;
 
 /**
  * The type Command runner.
  */
 public final class CommandRunner {
+    public static final double MAGIC_NUMBER_MILION = 1000000.0;
+    public static final double MAGIC_NUMBER100 = 100.0;
     private CommandRunner() {
     }
     /**
      * The Object mapper.
      */
-    public static ObjectMapper objectMapper = new ObjectMapper();
+    public static final ObjectMapper objectMapper = new ObjectMapper();
     /**
      * Search object node.
      *
@@ -422,7 +428,6 @@ public final class CommandRunner {
      */
     public static ObjectNode switchConnectionStatus(final CommandInput commandInput) {
        User checkIfUserExists = Admin.getInstance().checkIfUserExists(commandInput.getUsername());
-       boolean connectionStatus = Admin.getInstance().switchConnectionStatus(commandInput.getUsername());
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
@@ -694,22 +699,44 @@ public final class CommandRunner {
         objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().getTop5Artists()));
         return objectNode;
     }
+    /**
+     * Wraps the command input into a JSON ObjectNode with additional user-related information.
+     * The method takes command input and creates a JSON node that
+     * includes the command, username, and timestamp.
+     * It then fetches user information and determines the type
+     * of user (artist, host, or regular user)
+     * to provide specific data.
+     * If there's no data available for the user, it returns a message indicating so.
+     *
+     * @param commandInput The CommandInput object containing the command, username, and timestamp.
+     * @return ObjectNode A JSON object node containing the wrapped information.
+     * This includes:
+     *         - The command, user, and timestamp from the CommandInput.
+     *         - A result node with detailed information based on the user's
+     *         type and available data.
+     *         - A message node if there's no data to show.
+     */
     public static ObjectNode wrapped(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
         User user = Admin.getInstance().getUser(commandInput.getUsername());
-        if (user.getListenedSongs().isEmpty() && user.getListenedAlbums().isEmpty() &&
-                user.getMostListenedGenres().isEmpty() && user.getMostListenedArtists().isEmpty() &&
-                user.getListenedEpisodes().isEmpty()) {
-            if(user.isArtist())
-                objectNode.put("message", "No data to show for artist " + user.getName() + ".");
-            else
-                objectNode.put("message", "No data to show for user " + user.getName() + ".");
+        if (user.getListenedSongs().isEmpty() && user.getListenedAlbums().isEmpty()
+                && user.getMostListenedGenres().isEmpty()
+                && user.getMostListenedArtists().isEmpty()
+                && user.getListenedEpisodes().isEmpty()) {
+            if (user.isArtist()) {
+                objectNode.put("message", "No data to show for artist "
+                        + user.getName() + ".");
+            } else {
+                objectNode.put("message", "No data to show for user "
+                        + user.getName() + ".");
+            }
             return objectNode;
         }
-        if (!Admin.getInstance().checkIfHost(commandInput.getUsername()) && !Admin.getInstance().checkIfArtist(commandInput.getUsername())) {
+        if (!Admin.getInstance().checkIfHost(commandInput.getUsername())
+                && !Admin.getInstance().checkIfArtist(commandInput.getUsername())) {
             objectNode.put("result", objectMapper.valueToTree(Admin.getInstance().
                     wrappedUser(commandInput.getUsername())));
         }
@@ -724,24 +751,35 @@ public final class CommandRunner {
         return objectNode;
     }
 
+    /**
+     * Buy Premium
+     * */
     public static ObjectNode buyPremium(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.getInstance().getPremiumSubscription(commandInput.getUsername()));
+        objectNode.put("message", Admin.getInstance().
+                getPremiumSubscription(commandInput.getUsername()));
         return objectNode;
     }
 
+    /**
+     * Cancel Premium
+     * */
     public static ObjectNode cancelPremium(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.getInstance().cancelSubscription(commandInput.getUsername()));
+        objectNode.put("message", Admin.getInstance().
+                cancelSubscription(commandInput.getUsername()));
         return objectNode;
     }
 
+    /**
+     * Subscribe
+     */
     public static ObjectNode subscribe(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
         String message = user.subscribe(commandInput.getUsername());
@@ -755,6 +793,11 @@ public final class CommandRunner {
         return objectNode;
     }
 
+    /**
+     * Get notifications
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode getNotifications(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -762,11 +805,18 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("notifications", objectMapper.valueToTree(Admin.getInstance().getNotifications(commandInput.getUsername())));
+        objectNode.put("notifications", objectMapper.
+                valueToTree(Admin.getInstance().getNotifications(commandInput.
+                        getUsername())));
 
         return objectNode;
     }
 
+    /**
+     * Buy merch
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode buyMerch(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -774,11 +824,17 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", user.buyMerch(commandInput.getUsername(), commandInput.getName()));
+        objectNode.put("message", user.buyMerch(commandInput.
+                getUsername(), commandInput.getName()));
 
         return objectNode;
     }
 
+    /**
+     * Add merch
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode seeMerch(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -796,6 +852,11 @@ public final class CommandRunner {
         return objectNode;
     }
 
+    /**
+     * Next Page
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode nextPage(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -803,11 +864,18 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        NextPage nextPage = new NextPage(Admin.getInstance().getUser(commandInput.getUsername()));
+        NextPage nextPage = new NextPage(Admin.getInstance().
+                getUser(commandInput.getUsername()));
         objectNode.put("message", nextPage.execute());
 
         return objectNode;
     }
+
+    /**
+     * Previous Page
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode previousPage(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -815,12 +883,18 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        PreviousPage previousPage = new PreviousPage(Admin.getInstance().getUser(commandInput.getUsername()));
+        PreviousPage previousPage = new PreviousPage(Admin.getInstance().
+                getUser(commandInput.getUsername()));
         objectNode.put("message", previousPage.execute());
 
         return objectNode;
     }
 
+    /**
+     * Update Recommendations
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode updateRecommendations(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -828,10 +902,18 @@ public final class CommandRunner {
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.getInstance().updateRecommendations(commandInput.getUsername(), commandInput.getRecommendationType()));
+        objectNode.put("message", Admin.getInstance().
+                updateRecommendations(commandInput.getUsername(),
+                        commandInput.getRecommendationType()));
 
         return objectNode;
     }
+
+    /**
+     * Load Recommendations
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode loadRecommendations(final CommandInput commandInput) {
         User user = Admin.getInstance().getUser(commandInput.getUsername());
 
@@ -844,26 +926,45 @@ public final class CommandRunner {
         return objectNode;
     }
 
+    /**
+     * Generates a summary report at the end of the program execution.
+     * This method processes all users, particularly premium users,
+     * to calculate and update song revenues.
+     * It then sorts artists based on their revenues and other criteria,
+     * and generates a detailed report
+     * including each artist's merch revenue, song revenue, and their ranking.
+     * The method creates and returns an ObjectNode containing this information.
+     *
+     * @return ObjectNode A JSON object node containing the end-of-program summary.
+     *         The node includes a 'command' field set to "endProgram" and a 'result' node
+     *         with detailed information about each artist.
+     */
     public static ObjectNode endProgram() {
-        ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode root = objectMapper.createObjectNode();
         for (User user: Admin.getInstance().getUsers()) {
             if (user.isPremium()) {
                 int songTotal = 0;
-                for (Map.Entry<String, Integer> entry : user.getListenedSongsPremium().entrySet()) {
+                for (Map.Entry<String, Integer> entry : user.
+                        getListenedSongsPremium().entrySet()) {
                     songTotal += entry.getValue();
                 }
-                for (Map.Entry<String, Integer> entry : user.getMostListenedArtistsPremium().entrySet()) {
+                for (Map.Entry<String, Integer> entry : user.
+                        getMostListenedArtistsPremium().entrySet()) {
                     User artist =  Admin.getInstance().getUser(entry.getKey());
                     double songRevenue = artist.getSongRevenue();
-                    songRevenue = songRevenue + (1000000.0 * entry.getValue()) / songTotal;
+                    songRevenue = songRevenue + (MAGIC_NUMBER_MILION * entry.getValue())
+                            / songTotal;
                     artist.setSongRevenue(songRevenue);
                 }
-                for (Map.Entry<String, Integer> songEntry : user.getListenedSongsPremium().entrySet()) {
-                    User foundArtist = Admin.getInstance().getArtistBySong(songEntry.getKey());
+                for (Map.Entry<String, Integer> songEntry : user.
+                        getListenedSongsPremium().entrySet()) {
+                    User foundArtist = Admin.getInstance().getArtistBySong(songEntry.
+                            getKey());
                     if (foundArtist != null) {
-                        double revenueForASong = 1000000.0 * songEntry.getValue() / songTotal;
-                        double currentCountPremium = foundArtist.getMostProfitableSong().getOrDefault(songEntry.getKey(), 0.0);
+                        double revenueForASong = MAGIC_NUMBER_MILION * songEntry.getValue()
+                                / songTotal;
+                        double currentCountPremium = foundArtist.getMostProfitableSong().
+                                getOrDefault(songEntry.getKey(), 0.0);
                         foundArtist.getMostProfitableSong().put(songEntry.getKey(),
                                 currentCountPremium + revenueForASong);
                     }
@@ -887,12 +988,14 @@ public final class CommandRunner {
                 index++;
                 ObjectNode artistNode = objectMapper.createObjectNode();
                 artistNode.put("merchRevenue", artist.getMerchRevenue());
-                artistNode.put("songRevenue", Math.round(artist.getSongRevenue() * 100.0) / 100.0);
+                artistNode.put("songRevenue", Math.round(artist.
+                        getSongRevenue() * MAGIC_NUMBER100) / MAGIC_NUMBER100);
                 artistNode.put("ranking", index);
-                if (artist.getSongRevenue() == 0)
+                if (artist.getSongRevenue() == 0) {
                     artistNode.put("mostProfitableSong", "N/A");
-                else {
-                    for (Map.Entry<String, Double> entry : artist.getMostProfitableSong().entrySet()) {
+                } else {
+                    for (Map.Entry<String, Double> entry : artist.
+                            getMostProfitableSong().entrySet()) {
                         artistNode.put("mostProfitableSong", entry.getKey());
                         break;
                     }
@@ -906,12 +1009,18 @@ public final class CommandRunner {
         return root;
     }
 
+    /**
+     * AdBreak
+     * @param commandInput
+     * @return
+     */
     public static ObjectNode adBreak(final CommandInput commandInput) {
         ObjectNode objectNode = objectMapper.createObjectNode();
         objectNode.put("command", commandInput.getCommand());
         objectNode.put("user", commandInput.getUsername());
         objectNode.put("timestamp", commandInput.getTimestamp());
-        objectNode.put("message", Admin.getInstance().adBreak(commandInput.getUsername(), commandInput.getPrice()));
+        objectNode.put("message", Admin.getInstance().
+                adBreak(commandInput.getUsername(), commandInput.getPrice()));
         return objectNode;
     }
 }

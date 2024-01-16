@@ -208,7 +208,9 @@ public final class PlayerSource {
      * and sets it as the current audio file.
      */
     private void updateAudioFile() {
-        setAudioFile(audioCollection.getTrackByIndex(index));
+        if (this.getAudioCollection() != null) {
+            setAudioFile(audioCollection.getTrackByIndex(index));
+        }
     }
     /**
      * Updates the current audio file in the player source based on the current index.

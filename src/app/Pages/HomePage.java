@@ -28,12 +28,20 @@ public final class HomePage extends Page {
             followedPlaylists.add(playlist.getName());
         }
 
-        if (!this.getOwner().isRecommendation())
-            return "Liked songs:\n\t" + topSongs + "\n\nFollowed playlists:\n\t" + followedPlaylists;
+        if (!this.getOwner().isRecommendation()) {
+            return "Liked songs:\n\t" + topSongs
+                    + "\n\nFollowed playlists:\n\t" + followedPlaylists;
+        }
         if (this.getOwner().getRecommendationType().equals("fans_playlist")) {
-            return "Liked songs:\n\t" + topSongs + "\n\nFollowed playlists:\n\t" + followedPlaylists + "\n\nSong recommendations:\n\t[]\n\nPlaylists recommendations:\n\t[Elton John Fan Club recommendations]";
+            return "Liked songs:\n\t" + topSongs + "\n\nFollowed playlists:\n\t"
+                    + followedPlaylists + "\n\nSong recommendations:\n\t[]"
+                    + "\n\nPlaylists recommendations:"
+                    + "\n\t[Elton John Fan Club recommendations]";
         } else {
-            return "Liked songs:\n\t" + topSongs + "\n\nFollowed playlists:\n\t" + followedPlaylists + "\n\nSong recommendations:\n\t" + this.getOwner().getSongsRecommendation() + "\n\nPlaylists recommendations:\n\t" + this.getOwner().getPlaylistsRecommendation();
+            return "Liked songs:\n\t" + topSongs + "\n\nFollowed playlists:\n\t" + followedPlaylists
+                    + "\n\nSong recommendations:\n\t" + this.getOwner().getSongsRecommendation()
+                    + "\n\nPlaylists recommendations:\n\t"
+                    + this.getOwner().getPlaylistsRecommendation();
         }
     }
 

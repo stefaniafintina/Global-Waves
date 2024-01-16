@@ -10,7 +10,7 @@ public class Notifications {
     @Setter
     private String description;
 
-    public Notifications(String name, String description) {
+    public Notifications(final String name, final String description) {
         this.name = name;
         this.description = description;
     }
